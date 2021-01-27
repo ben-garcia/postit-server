@@ -1,9 +1,22 @@
+import { ApolloServer } from 'apollo-server-express';
+import { buildSchema } from 'type-graphql';
 import express from 'express';
+import { createConnection } from 'typeorm';
 
-const app = express();
+(async () => {
+  const app = express();
+  const schema = await buildSchema({
+    resolvers: [`${__dirname}/resolvers/*.ts`],
+  });
 
-app.get('/', (_, res) => {
-  res.json({ hello: 'world' });
-});
+  await createConnection();
 
-app.listen(8888, () => console.log('listening on port 8888'));
+  const server = new ApolloServer({ schema });
+
+  server.applyMiddleware({ app });
+
+  app.listen(4000, () =>
+    // eslint-disable-next-line no-console
+    console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
+  );
+})();
