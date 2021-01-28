@@ -1,22 +1,35 @@
+import { IsEmail, MinLength, MaxLength } from 'class-validator';
 import { Arg, Field, InputType, Mutation, Query, Resolver } from 'type-graphql';
 
 import { User } from '../entities';
+import { IsEmailUnique, IsUsernameUnique } from '../decorators';
 
 /**
  * This class represents the properties needed to create a User.
  *
  * Instead of passing 3 arguments to the register mutation, this class
  * is used to define the object with those same arguments.
+ *
+ * Contraints
+ * email must be email addresss.
+ * username must be between 3 - 20 in legnth.
+ * password must contain at least 6 characters
  */
 @InputType()
 class RegisterInput {
   @Field()
+  @IsEmail()
+  @IsEmailUnique({ message: 'That email is already taken' })
   email: string;
 
   @Field()
+  @MinLength(3, { message: 'Username must be between 3 and 20 characters' })
+  @MaxLength(20, { message: 'Username must be between 3 and 20 characters' })
+  @IsUsernameUnique({ message: 'That username is already taken' })
   username: string;
 
   @Field()
+  @MinLength(6, { message: 'Password must be at least 6 characters long' })
   password: string;
 }
 
@@ -26,15 +39,50 @@ class RegisterInput {
  */
 @Resolver()
 class AuthResolver {
-  @Query(() => String)
-  hello(): String {
-    return 'world!';
-  }
-
   @Query(() => [User])
   getAllUsers(): Promise<User[]> {
     const users = User.find();
     return users;
+  }
+
+  /**
+   * Checks if there is a user with the same email.
+   */
+  @Query(() => Boolean)
+  async isEmailUnique(
+    @Arg('email', () => String) email: string
+  ): Promise<boolean> {
+    try {
+      const user = await User.findOne({ where: { email } });
+      if (user) {
+        return false;
+      }
+      return true;
+    } catch (e) {
+      // eslint-disable-next-line
+      console.log('isEmailUnique error: ', e);
+      return false;
+    }
+  }
+
+  /**
+   * Checks if there is a user with the same username.
+   */
+  @Query(() => Boolean)
+  async isUsernameUnique(
+    @Arg('username', () => String) username: string
+  ): Promise<boolean> {
+    try {
+      const user = await User.findOne({ where: { username } });
+      if (user) {
+        return false;
+      }
+      return true;
+    } catch (e) {
+      // eslint-disable-next-line
+			console.log('isUsernameUnique error: ', e);
+      return false;
+    }
   }
 
   @Mutation(() => Boolean)
