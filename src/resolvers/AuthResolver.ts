@@ -1,8 +1,10 @@
 import { IsEmail, MinLength, MaxLength } from 'class-validator';
+import { Service } from 'typedi';
 import { Arg, Field, InputType, Mutation, Query, Resolver } from 'type-graphql';
 
-import { User } from '../entities';
 import { IsEmailUnique, IsUsernameUnique } from '../decorators';
+import { UserService } from '../services';
+import { User } from '../entities';
 
 /**
  * This class represents the properties needed to create a User.
@@ -38,11 +40,17 @@ class RegisterInput {
  * the auth controller.
  */
 @Resolver()
+@Service()
 class AuthResolver {
+  private userService: UserService;
+
+  constructor(userService: UserService) {
+    this.userService = userService;
+  }
+
   @Query(() => [User])
   getAllUsers(): Promise<User[]> {
-    const users = User.find();
-    return users;
+    return this.userService.getAll();
   }
 
   /**

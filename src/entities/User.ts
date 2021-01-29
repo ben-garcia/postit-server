@@ -33,7 +33,6 @@ class User extends BaseEntity {
   hasValidated: boolean;
 
   @Column()
-  @Field(() => String)
   password: string;
 
   @CreateDateColumn()
