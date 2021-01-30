@@ -278,7 +278,7 @@ describe('AuthResolver', () => {
         });
         const errors = response.errors[0].extensions.exception.validationErrors;
 
-        expect(errors.length).toBe(2);
+        expect(errors.length).toBe(1);
         expect(errors[0].constraints.maxLength).toEqual(expected);
       });
     });

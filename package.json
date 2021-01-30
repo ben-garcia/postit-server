@@ -64,7 +64,7 @@
     "**/*.{ts}": [
       "eslint --fix",
       "prettier --write",
-      "yarn test",
+      "jest",
       "git add"
     ],
     "**/*.{json,md}": [
