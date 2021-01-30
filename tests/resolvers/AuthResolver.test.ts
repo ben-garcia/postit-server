@@ -25,12 +25,15 @@ const registerMutation = `
 
 describe('AuthResolver', () => {
   let mutate: any;
+  let query: any;
 
   beforeAll(async () => {
     const schema = await createSchema();
     const server = new ApolloServer({ schema });
     const testServer = createTestClient(server);
+
     mutate = testServer.mutate;
+    query = testServer.query;
   });
 
   describe('Mutations', () => {
@@ -49,6 +52,7 @@ describe('AuthResolver', () => {
             createUserData: fakeUser,
           },
         });
+
         expect(response.data).toEqual(expected);
       });
 
@@ -66,6 +70,7 @@ describe('AuthResolver', () => {
           });
           const errors =
             response.errors[0].extensions.exception.validationErrors;
+
           expect(errors.length).toBe(1);
           expect(errors[0].constraints.isEmailUnique).toEqual(expected);
         });
@@ -84,6 +89,7 @@ describe('AuthResolver', () => {
           });
           const errors =
             response.errors[0].extensions.exception.validationErrors;
+
           expect(errors.length).toBe(1);
           expect(errors[0].constraints.isEmail).toEqual(expected);
         });
@@ -103,6 +109,7 @@ describe('AuthResolver', () => {
           });
           const errors =
             response.errors[0].extensions.exception.validationErrors;
+
           expect(errors.length).toBe(1);
           expect(errors[0].constraints.isUsernameUnique).toEqual(expected);
         });
@@ -121,6 +128,7 @@ describe('AuthResolver', () => {
           });
           const errors =
             response.errors[0].extensions.exception.validationErrors;
+
           expect(errors.length).toBe(1);
           expect(errors[0].constraints.minLength).toEqual(expected);
         });
@@ -139,6 +147,7 @@ describe('AuthResolver', () => {
           });
           const errors =
             response.errors[0].extensions.exception.validationErrors;
+
           expect(errors.length).toBe(1);
           expect(errors[0].constraints.maxLength).toEqual(expected);
         });
@@ -157,8 +166,120 @@ describe('AuthResolver', () => {
           },
         });
         const errors = response.errors[0].extensions.exception.validationErrors;
+
         expect(errors.length).toBe(1);
         expect(errors[0].constraints.minLength).toEqual(expected);
+      });
+    });
+  });
+
+  describe('Queries', () => {
+    const isEmailUniqueQuery = `
+			query IsEmailUnique($email: String!) {
+			  isEmailUnique(email: $email)
+		  }
+		`;
+    const isUsernameUnique = `
+			query IsUsernameUnique($username: String!) {
+				isUsernameUnique(username: $username)
+			}
+		`;
+
+    describe('isEmailUnique', () => {
+      it('should succeed when its a valid email and it isnt in the db', async () => {
+        const expected = { isEmailUnique: true };
+        const response = await query({
+          query: isEmailUniqueQuery,
+          variables: {
+            email: 'ben2@ben.com',
+          },
+        });
+
+        expect(response.data).toEqual(expected);
+      });
+
+      it('should fail when email exists in the db', async () => {
+        const expected = 'That email is already taken';
+        const response = await query({
+          query: isEmailUniqueQuery,
+          variables: {
+            email: 'ben@ben.com',
+          },
+        });
+        const errors = response.errors[0].extensions.exception.validationErrors;
+
+        expect(errors.length).toBe(1);
+        expect(errors[0].constraints.isEmailUnique).toEqual(expected);
+      });
+
+      it('should fail when email is invalid', async () => {
+        const expected = 'email must be an email';
+        const response = await query({
+          query: isEmailUniqueQuery,
+          variables: {
+            email: 'ben.com',
+          },
+        });
+        const errors = response.errors[0].extensions.exception.validationErrors;
+
+        expect(errors.length).toBe(1);
+        expect(errors[0].constraints.isEmail).toEqual(expected);
+      });
+    });
+
+    describe('isUsernameUnique', () => {
+      it('should succeed when it meets the length requirements and isnt in the db', async () => {
+        const expected = { isUsernameUnique: true };
+        const response = await query({
+          query: isUsernameUnique,
+          variables: {
+            username: 'benbenben',
+          },
+        });
+
+        expect(response.data).toEqual(expected);
+      });
+
+      it('should fail when username exists in the db', async () => {
+        const expected = 'That username is already taken';
+        const response = await query({
+          query: isUsernameUnique,
+          variables: {
+            username: 'benben',
+          },
+        });
+        const errors = response.errors[0].extensions.exception.validationErrors;
+
+        expect(errors.length).toBe(1);
+        expect(errors[0].constraints.isUsernameUnique).toEqual(expected);
+      });
+
+      it('should fail when username less than 3 characters', async () => {
+        const expected = 'Username must be between 3 and 20 characters';
+        const response = await query({
+          query: isUsernameUnique,
+          variables: {
+            username: 'b',
+          },
+        });
+        const errors = response.errors[0].extensions.exception.validationErrors;
+
+        expect(errors.length).toBe(1);
+        expect(errors[0].constraints.minLength).toEqual(expected);
+      });
+
+      it('should fail when username greater than 20 characters', async () => {
+        const expected = 'Username must be between 3 and 20 characters';
+        const response = await query({
+          query: isUsernameUnique,
+          variables: {
+            username: 'benjskfajalkjfksajdfjalsfdkjsa',
+          },
+        });
+        const errors = response.errors[0].extensions.exception.validationErrors;
+
+        expect(errors.length).toBe(2);
+        expect(errors[0].constraints.maxLength).toEqual(expected);
       });
     });
   });

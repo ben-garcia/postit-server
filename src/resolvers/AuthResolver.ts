@@ -1,6 +1,15 @@
 import { IsEmail, MinLength, MaxLength } from 'class-validator';
 import { Service } from 'typedi';
-import { Arg, Field, InputType, Mutation, Query, Resolver } from 'type-graphql';
+import {
+  Arg,
+  Args,
+  ArgsType,
+  Field,
+  InputType,
+  Mutation,
+  Query,
+  Resolver,
+} from 'type-graphql';
 
 import { IsEmailUnique, IsUsernameUnique } from '../decorators';
 import { UserService } from '../services';
@@ -36,6 +45,38 @@ class RegisterInput {
 }
 
 /**
+ * Validates email argument passed in to isEmailUnique.
+ *
+ * Must be a valid email address
+ * Must be unique, there can be no user in the db with that
+ * same email.
+ */
+@ArgsType()
+class EmailArg {
+  @Field()
+  @IsEmail()
+  @IsEmailUnique({ message: 'That email is already taken' })
+  email: string;
+}
+
+/**
+ * Validates email argument passed in to isUsernameUnique.
+ *
+ * Must be a valid username.
+ * Must be between 3 - 20 characters in length.
+ * Must be unique, there can be no user in the db with that
+ * same email.
+ */
+@ArgsType()
+class UsernameArg {
+  @Field()
+  @MinLength(3, { message: 'Username must be between 3 and 20 characters' })
+  @MaxLength(20, { message: 'Username must be between 3 and 20 characters' })
+  @IsUsernameUnique({ message: 'That username is already taken' })
+  username: string;
+}
+
+/**
  * This class defines the queries and mutations associated with
  * the auth controller.
  */
@@ -54,13 +95,11 @@ class AuthResolver {
   }
 
   /**
-   * Checks if there is a user with the same email.
+   * Checks if there is a user with the same email and
+   * that email is valid.
    */
   @Query(() => Boolean)
-  async isEmailUnique(
-    @Arg('email', () => String, { validate: true })
-    email: string
-  ): Promise<boolean> {
+  async isEmailUnique(@Args() { email }: EmailArg): Promise<boolean> {
     try {
       const user = await User.findOne({ where: { email } });
       if (user) {
@@ -78,9 +117,7 @@ class AuthResolver {
    * Checks if there is a user with the same username.
    */
   @Query(() => Boolean)
-  async isUsernameUnique(
-    @Arg('username', () => String) username: string
-  ): Promise<boolean> {
+  async isUsernameUnique(@Args() { username }: UsernameArg): Promise<boolean> {
     try {
       const user = await User.findOne({ where: { username } });
       if (user) {
