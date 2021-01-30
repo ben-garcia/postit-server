@@ -1,11 +1,11 @@
 import 'reflect-metadata';
 import { ApolloServer } from 'apollo-server-express';
 import { Container } from 'typedi';
-import { buildSchema } from 'type-graphql';
 import express from 'express';
 import { createConnection, getRepository } from 'typeorm';
 
 import { User } from './entities';
+import { createSchema } from './utils/createSchema';
 
 (async () => {
   // establish the connection to the database.
@@ -17,10 +17,7 @@ import { User } from './entities';
 
   const app = express();
   // builds the GraphQL schema using the resolver classes.
-  const schema = await buildSchema({
-    container: Container,
-    resolvers: [`${__dirname}/resolvers/*.ts`],
-  });
+  const schema = await createSchema();
   const server = new ApolloServer({ schema });
 
   server.applyMiddleware({ app });
