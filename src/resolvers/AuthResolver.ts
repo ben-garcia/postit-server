@@ -93,12 +93,15 @@ class AuthResolver {
     }
   }
 
+  /**
+   * Mutation the create a user in the database.
+   */
   @Mutation(() => Boolean)
   async register(
     @Arg('createUserData', () => RegisterInput) createUserData: RegisterInput
   ): Promise<Boolean> {
     try {
-      await User.create(createUserData).save();
+      await this.userService.create(createUserData);
       return true;
     } catch (e) {
       // eslint-disable-next-line

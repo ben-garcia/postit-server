@@ -3,6 +3,12 @@ import { Repository } from 'typeorm';
 
 import { User } from '../entities';
 
+interface CreateUserDTO {
+  email: string;
+  username: string;
+  password: string;
+}
+
 /**
  * This service queries the 'users' table
  */
@@ -26,6 +32,19 @@ class UserService {
   async getAll(): Promise<User[]> {
     const users = await this.userRepository.find();
     return users;
+  }
+
+  /**
+   * Create a user and save it the the database.
+   */
+  async create(user: CreateUserDTO): Promise<User | null> {
+    try {
+      return await this.userRepository.create(user).save();
+    } catch (e) {
+      // eslint-disable-next-line
+      console.log('UserService.create error: ', e);
+      return null;
+    }
   }
 }
 
