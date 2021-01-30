@@ -58,7 +58,8 @@ class AuthResolver {
    */
   @Query(() => Boolean)
   async isEmailUnique(
-    @Arg('email', () => String) email: string
+    @Arg('email', () => String, { validate: true })
+    email: string
   ): Promise<boolean> {
     try {
       const user = await User.findOne({ where: { email } });

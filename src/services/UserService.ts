@@ -39,7 +39,8 @@ class UserService {
    */
   async create(user: CreateUserDTO): Promise<User | null> {
     try {
-      return await this.userRepository.create(user).save();
+      const createdUser = await this.userRepository.create(user).save();
+      return createdUser;
     } catch (e) {
       // eslint-disable-next-line
       console.log('UserService.create error: ', e);

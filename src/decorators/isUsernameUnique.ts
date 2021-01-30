@@ -10,7 +10,7 @@ import User from '../entities/User';
 export function IsUsernameUnique(validationOptions?: ValidationOptions) {
   return (object: Object, propertyName: string) => {
     registerDecorator({
-      name: 'IsUsernameUnique',
+      name: 'isUsernameUnique',
       target: object.constructor,
       propertyName,
       options: validationOptions,

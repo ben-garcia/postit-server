@@ -18,7 +18,9 @@ import { createSchema } from './utils/createSchema';
   const app = express();
   // builds the GraphQL schema using the resolver classes.
   const schema = await createSchema();
-  const server = new ApolloServer({ schema });
+  const server = new ApolloServer({
+    schema,
+  });
 
   server.applyMiddleware({ app });
 
