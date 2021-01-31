@@ -3,8 +3,8 @@ import { createTestClient } from 'apollo-server-testing';
 import { Connection, getRepository } from 'typeorm';
 import { Container } from 'typedi';
 
-import { createSchema, createTestConnection } from '../../src/utils';
-import { User } from '../../src/entities';
+import { createSchema, createTestConnection } from '../../../src/utils';
+import { User } from '../../../src/entities';
 
 let connection: Connection;
 
@@ -23,7 +23,7 @@ const registerMutation = `
 	}
 `;
 
-describe('AuthResolver', () => {
+describe('AuthResolver integration', () => {
   let mutate: any;
   let query: any;
 

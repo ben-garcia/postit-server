@@ -27,25 +27,41 @@ class UserService {
   }
 
   /**
-   * Fetch all users.
+   * Create a user and save it the the database.
    */
-  async getAll(): Promise<User[]> {
-    const users = await this.userRepository.find();
-    return users;
+  async create(user: CreateUserDTO): Promise<User> {
+    const newUser = this.userRepository.create(user);
+    await this.userRepository.save(newUser);
+
+    return newUser;
   }
 
   /**
-   * Create a user and save it the the database.
+   * Fetch all users.
    */
-  async create(user: CreateUserDTO): Promise<User | null> {
-    try {
-      const createdUser = await this.userRepository.create(user).save();
-      return createdUser;
-    } catch (e) {
-      // eslint-disable-next-line
-      console.log('UserService.create error: ', e);
-      return null;
-    }
+  async getAll(): Promise<User[] | undefined> {
+    return this.userRepository.find();
+  }
+
+  /**
+   * Fetch a user by email
+   */
+  async getByEmail(email: string): Promise<User | undefined> {
+    return this.userRepository.findOne({ where: { email } });
+  }
+
+  /**
+   * Fetch a user by id
+   */
+  async getById(id: number | string): Promise<User | undefined> {
+    return this.userRepository.findOne(id);
+  }
+
+  /**
+   * Fetch a user by username
+   */
+  async getByUsername(username: string): Promise<User | undefined> {
+    return this.userRepository.findOne({ where: { username } });
   }
 }
 

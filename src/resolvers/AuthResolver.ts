@@ -83,15 +83,22 @@ class UsernameArg {
 @Resolver()
 @Service()
 class AuthResolver {
-  private userService: UserService;
+  public userService: UserService;
 
   constructor(userService: UserService) {
     this.userService = userService;
   }
 
   @Query(() => [User])
-  getAllUsers(): Promise<User[]> {
-    return this.userService.getAll();
+  async getAllUsers(): Promise<User[] | undefined> {
+    try {
+      const users = await this.userService.getAll();
+      return users;
+    } catch (e) {
+      // eslint-disable-next-line
+			console.log('AuthResolver.getAllUsers error: ', e);
+      return undefined;
+    }
   }
 
   /**
@@ -101,7 +108,7 @@ class AuthResolver {
   @Query(() => Boolean)
   async isEmailUnique(@Args() { email }: EmailArg): Promise<boolean> {
     try {
-      const user = await User.findOne({ where: { email } });
+      const user = await this.userService.getByEmail(email);
       if (user) {
         return false;
       }
@@ -119,7 +126,7 @@ class AuthResolver {
   @Query(() => Boolean)
   async isUsernameUnique(@Args() { username }: UsernameArg): Promise<boolean> {
     try {
-      const user = await User.findOne({ where: { username } });
+      const user = await this.userService.getByUsername(username);
       if (user) {
         return false;
       }
