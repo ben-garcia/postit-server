@@ -10,11 +10,11 @@ describe('AuthResolver unit', () => {
       save: jest.fn(),
     };
     const mockTransporter = {
-      sendEmail: jest.fn(),
+      sendVerificationEmail: jest.fn(),
     };
 
     function MockMailService(this: any, transporter: typeof mockTransporter) {
-      this.sendEmail = jest.fn();
+      this.sendVerificationEmail = jest.fn();
       this.transporter = transporter;
     }
 
@@ -86,7 +86,12 @@ describe('AuthResolver unit', () => {
       expect(authResolver.userService.create).toHaveBeenCalledWith(
         createUserData
       );
-      expect(authResolver.mailService.sendEmail).toHaveBeenCalledTimes(1);
+      expect(
+        authResolver.mailService.sendVerificationEmail
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        authResolver.mailService.sendVerificationEmail
+      ).toHaveBeenCalledWith(createUserData.email, createUserData.username);
     });
   });
 });

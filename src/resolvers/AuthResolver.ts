@@ -148,8 +148,10 @@ class AuthResolver {
     @Arg('createUserData', () => RegisterInput) createUserData: RegisterInput
   ): Promise<Boolean> {
     try {
+      const { email, username } = createUserData;
+
       await this.userService.create(createUserData);
-      await this.mailService.sendEmail();
+      await this.mailService.sendVerificationEmail(email, username);
 
       return true;
     } catch (e) {
