@@ -9,6 +9,14 @@ describe('AuthResolver unit', () => {
       findOne: jest.fn(),
       save: jest.fn(),
     };
+    const mockTransporter = {
+      sendEmail: jest.fn(),
+    };
+
+    function MockMailService(this: any, transporter: typeof mockTransporter) {
+      this.sendEmail = jest.fn();
+      this.transporter = transporter;
+    }
 
     function MockUserService(
       this: any,
@@ -23,6 +31,7 @@ describe('AuthResolver unit', () => {
     }
 
     authResolver = new AuthResolver(
+      new (MockMailService as any)(mockTransporter),
       new (MockUserService as any)(mockUserRepository)
     );
   });
@@ -64,7 +73,7 @@ describe('AuthResolver unit', () => {
   });
 
   describe('register mutation', () => {
-    it('should call the create method from userService', async () => {
+    it('should call userService.create and mailService.sendEmail', async () => {
       const createUserData = {
         email: 'ben@ben.com',
         password: 'benben',
@@ -77,6 +86,7 @@ describe('AuthResolver unit', () => {
       expect(authResolver.userService.create).toHaveBeenCalledWith(
         createUserData
       );
+      expect(authResolver.mailService.sendEmail).toHaveBeenCalledTimes(1);
     });
   });
 });

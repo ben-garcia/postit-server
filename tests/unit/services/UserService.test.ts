@@ -19,50 +19,54 @@ describe('UserService', () => {
   });
 
   describe('getByEmail', () => {
-    it('should call the findOne method from the model', () => {
+    it('should call the findOne method from the model', async () => {
       const email = 'ben@ben.com';
       const expected = {
         where: { email },
       };
 
-      userService.getByEmail(email);
+      await userService.getByEmail(email);
+
       expect(mockModel.findOne).toHaveBeenCalledTimes(1);
       expect(mockModel.findOne).toHaveBeenCalledWith(expected);
     });
   });
 
   describe('getById', () => {
-    it('should call the findOne method from the model', () => {
+    it('should call the findOne method from the model', async () => {
       const id = 1;
 
-      userService.getById(id);
+      await userService.getById(id);
+
       expect(mockModel.findOne).toHaveBeenCalledTimes(id);
       expect(mockModel.findOne).toHaveBeenCalledWith(id);
     });
   });
 
   describe('getByUsername', () => {
-    it('should call the findOne method from the model', () => {
+    it('should call the findOne method from the model', async () => {
       const username = 'benben';
       const expected = {
         where: { username },
       };
 
-      userService.getByUsername(username);
+      await userService.getByUsername(username);
+
       expect(mockModel.findOne).toHaveBeenCalledTimes(1);
       expect(mockModel.findOne).toHaveBeenCalledWith(expected);
     });
   });
 
   describe('create', () => {
-    it('should call the create and save methods from the model', () => {
+    it('should call the create and save methods from the model', async () => {
       const user = {
         email: 'test@test.com',
         password: 'benbenben',
         username: 'benben',
       };
 
-      userService.create(user);
+      await userService.create(user);
+
       expect(mockModel.create).toHaveBeenCalledTimes(1);
       expect(mockModel.create).toHaveBeenCalledWith(user);
       expect(mockModel.save).toHaveBeenCalledTimes(1);

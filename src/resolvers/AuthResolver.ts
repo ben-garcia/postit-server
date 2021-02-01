@@ -12,7 +12,7 @@ import {
 } from 'type-graphql';
 
 import { IsEmailUnique, IsUsernameUnique } from '../decorators';
-import { UserService } from '../services';
+import { MailService, UserService } from '../services';
 import { User } from '../entities';
 
 /**
@@ -83,9 +83,11 @@ class UsernameArg {
 @Resolver()
 @Service()
 class AuthResolver {
+  public mailService: MailService;
   public userService: UserService;
 
-  constructor(userService: UserService) {
+  constructor(mailService: MailService, userService: UserService) {
+    this.mailService = mailService;
     this.userService = userService;
   }
 
@@ -147,6 +149,8 @@ class AuthResolver {
   ): Promise<Boolean> {
     try {
       await this.userService.create(createUserData);
+      await this.mailService.sendEmail();
+
       return true;
     } catch (e) {
       // eslint-disable-next-line

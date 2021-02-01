@@ -1,19 +1,22 @@
 import 'reflect-metadata';
 import { ApolloServer } from 'apollo-server-express';
-import { Container } from 'typedi';
+import dotenv from 'dotenv';
 import express from 'express';
+import { Container } from 'typedi';
 import { createConnection, getRepository } from 'typeorm';
 
 import { User } from './entities';
-import { createSchema } from './utils/createSchema';
+import { createTransporter, createSchema } from './utils';
+
+dotenv.config();
 
 (async () => {
   // establish the connection to the database.
   await createConnection();
 
-  // Set the User repository as the injected property
-  // on the UserService.
+  // Set values on the injected properties.
   Container.set('userRepository', getRepository(User));
+  Container.set('transporter', await createTransporter());
 
   const app = express();
   // builds the GraphQL schema using the resolver classes.

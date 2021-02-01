@@ -1,4 +1,5 @@
-import { createSchema } from './createSchema';
 import { createTestConnection } from './createTestConnection';
+import { createTransporter } from './createTransporter';
+import { createSchema } from './createSchema';
 
-export { createSchema, createTestConnection };
+export { createTestConnection, createTransporter, createSchema };

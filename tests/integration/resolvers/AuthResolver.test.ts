@@ -2,8 +2,11 @@ import { ApolloServer } from 'apollo-server-express';
 import { createTestClient } from 'apollo-server-testing';
 import { Connection, getRepository } from 'typeorm';
 import { Container } from 'typedi';
-
-import { createSchema, createTestConnection } from '../../../src/utils';
+import {
+  createTestConnection,
+  createTransporter,
+  createSchema,
+} from '../../../src/utils';
 import { User } from '../../../src/entities';
 
 let connection: Connection;
@@ -11,6 +14,7 @@ let connection: Connection;
 beforeAll(async () => {
   connection = await createTestConnection();
   Container.set('userRepository', getRepository(User));
+  Container.set('transporter', await createTransporter());
 });
 
 afterAll(async () => {

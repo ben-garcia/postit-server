@@ -1,3 +1,4 @@
+import MailService from './MailService';
 import UserService from './UserService';
 
-export { UserService };
+export { MailService, UserService };
