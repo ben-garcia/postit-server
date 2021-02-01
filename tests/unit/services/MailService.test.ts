@@ -26,6 +26,7 @@ describe('MailService', () => {
     it('should call the sendMail method of the transporter', async () => {
       const email = 'bar@example.com';
       const username = 'bar';
+      const base64String = 'base64String';
       const expected = {
         from: 'Postit <foo@example.com>',
         to: `${email}`,
@@ -67,7 +68,7 @@ describe('MailService', () => {
 							</p>
 							<div style="display: flex; justify-content: center; margin-top: 30px;">
 							<a
-								href="#"
+								href="http://localhost:3000/verification/${base64String}"
 								style="background: #0079D3;
 											 border-radius: 4px;
 											 font-size: 12px;
@@ -85,7 +86,7 @@ describe('MailService', () => {
 			`,
       };
 
-      await mailService.sendVerificationEmail(email, username);
+      await mailService.sendVerificationEmail(email, username, base64String);
 
       expect(mockTransporter.sendMail).toHaveBeenCalledTimes(1);
       expect(mockTransporter.sendMail).toHaveBeenCalledWith(expected);

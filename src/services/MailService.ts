@@ -28,7 +28,12 @@ class MailService {
   /**
    * Send an email to get the user to verify their email address.
    */
-  async sendVerificationEmail(email: string, username: string) {
+  async sendVerificationEmail(
+    email: string,
+    username: string,
+    base64String: string
+  ) {
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
     const sendMailOptions = {
       from: 'Postit <foo@example.com>',
       to: `${email}`,
@@ -70,7 +75,7 @@ class MailService {
 							</p>
 							<div style="display: flex; justify-content: center; margin-top: 30px;">
 							<a
-								href="#"
+								href="${clientUrl}/verification/${base64String}"
 								style="background: #0079D3;
 											 border-radius: 4px;
 											 font-size: 12px;

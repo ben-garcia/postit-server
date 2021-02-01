@@ -73,7 +73,7 @@ describe('AuthResolver unit', () => {
   });
 
   describe('register mutation', () => {
-    it('should call userService.create and mailService.sendEmail', async () => {
+    it('should call userService.create and mailService.sendVerificationEmail', async () => {
       const createUserData = {
         email: 'ben@ben.com',
         password: 'benben',
@@ -91,7 +91,11 @@ describe('AuthResolver unit', () => {
       ).toHaveBeenCalledTimes(1);
       expect(
         authResolver.mailService.sendVerificationEmail
-      ).toHaveBeenCalledWith(createUserData.email, createUserData.username);
+      ).toHaveBeenCalledWith(
+        createUserData.email,
+        createUserData.username,
+        expect.any(String)
+      );
     });
   });
 });
