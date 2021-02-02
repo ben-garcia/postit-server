@@ -52,7 +52,7 @@ class MailService {
 											  width: 45%;">
 							<div style="display: flex; justify-content: space-between;">
 								<span style="font-size: 30px">postit</span>	
-								<span style="color: #7A9299; font-size: 10px">u/${username}</span>
+								<a style="text-decoration: none" href="${clientUrl}/user/${username}"><span style="color: #7A9299; font-size: 10px">u/${username}</span></a>
 							</div>
 							<br />
 							<br />

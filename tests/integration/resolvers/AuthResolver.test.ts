@@ -1,37 +1,36 @@
 import { ApolloServer } from 'apollo-server-express';
 import { createTestClient } from 'apollo-server-testing';
-import { Connection, getRepository } from 'typeorm';
+import { getRepository } from 'typeorm';
 import { Container } from 'typedi';
 import {
   createTestConnection,
   createTransporter,
   createSchema,
+  TestUtils,
 } from '../../../src/utils';
 import { User } from '../../../src/entities';
-
-let connection: Connection;
-
-beforeAll(async () => {
-  connection = await createTestConnection();
-  Container.set('userRepository', getRepository(User));
-  Container.set('transporter', await createTransporter());
-});
-
-afterAll(async () => {
-  await connection.close();
-});
-
-const registerMutation = `
-	mutation Register($createUserData: RegisterInput!) {
-		register(createUserData: $createUserData)
-	}
-`;
 
 describe('AuthResolver integration', () => {
   let mutate: any;
   let query: any;
+  let testUtils: TestUtils;
+  const registerMutation = `
+	mutation Register($createUserData: RegisterInput!) {
+		register(createUserData: $createUserData)
+	}
+`;
+  const fakeUser = {
+    email: 'ben@ben.com',
+    username: 'benben',
+    password: 'benben',
+  };
 
   beforeAll(async () => {
+    testUtils = new TestUtils(await createTestConnection());
+
+    Container.set('userRepository', getRepository(User));
+    Container.set('transporter', await createTransporter());
+
     const schema = await createSchema();
     const server = new ApolloServer({ schema });
     const testServer = createTestClient(server);
@@ -40,14 +39,16 @@ describe('AuthResolver integration', () => {
     query = testServer.query;
   });
 
+  beforeEach(async () => {
+    await testUtils.clearTables('users');
+  });
+
+  afterAll(async () => {
+    await testUtils.closeConnection();
+  });
+
   describe('Mutations', () => {
     describe('register', () => {
-      const fakeUser = {
-        email: 'ben@ben.com',
-        username: 'benben',
-        password: 'benben',
-      };
-
       it('should succesfully create a user', async () => {
         const expected = { register: true };
         const response = await mutate({
@@ -62,6 +63,12 @@ describe('AuthResolver integration', () => {
 
       describe('email', () => {
         it('should fail when trying to add user with an email that is already taken', async () => {
+          await testUtils
+            .getConnection()
+            .getRepository(User)
+            .create(fakeUser)
+            .save();
+
           const expected = 'That email is already taken';
           const response = await mutate({
             mutation: registerMutation,
@@ -101,6 +108,12 @@ describe('AuthResolver integration', () => {
 
       describe('username', () => {
         it('should fail when trying to add user with a username that is already taken', async () => {
+          await testUtils
+            .getConnection()
+            .getRepository(User)
+            .create(fakeUser)
+            .save();
+
           const expected = 'That username is already taken';
           const response = await mutate({
             mutation: registerMutation,
@@ -203,11 +216,17 @@ describe('AuthResolver integration', () => {
       });
 
       it('should fail when email exists in the db', async () => {
+        await testUtils
+          .getConnection()
+          .getRepository(User)
+          .create(fakeUser)
+          .save();
+
         const expected = 'That email is already taken';
         const response = await query({
           query: isEmailUniqueQuery,
           variables: {
-            email: 'ben@ben.com',
+            email: fakeUser.email,
           },
         });
         const errors = response.errors[0].extensions.exception.validationErrors;
@@ -245,11 +264,17 @@ describe('AuthResolver integration', () => {
       });
 
       it('should fail when username exists in the db', async () => {
+        await testUtils
+          .getConnection()
+          .getRepository(User)
+          .create(fakeUser)
+          .save();
+
         const expected = 'That username is already taken';
         const response = await query({
           query: isUsernameUnique,
           variables: {
-            username: 'benben',
+            username: fakeUser.username,
           },
         });
         const errors = response.errors[0].extensions.exception.validationErrors;
