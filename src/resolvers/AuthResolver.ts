@@ -10,11 +10,11 @@ import {
   Query,
   Resolver,
 } from 'type-graphql';
-import { v4 as uuid } from 'uuid';
 
 import { IsEmailUnique, IsUsernameUnique } from '../decorators';
-import { MailService, UserService } from '../services';
 import { User } from '../entities';
+import { MailService, UserService } from '../services';
+import { createToken } from '../utils';
 
 /**
  * This class represents the properties needed to create a User.
@@ -150,16 +150,12 @@ class AuthResolver {
   ): Promise<Boolean> {
     try {
       const { email, username } = createUserData;
-      const base64String = Buffer.from(`${uuid()}-${uuid()}`).toString(
-        'base64'
-      );
 
       await this.userService.create(createUserData);
       await this.mailService.sendVerificationEmail(
         email,
         username,
-        // remove the final 2(==) characters
-        base64String.slice(1, base64String.length - 2)
+        createToken()
       );
 
       return true;

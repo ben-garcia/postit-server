@@ -1,4 +1,7 @@
 import { AuthResolver } from '../../../src/resolvers';
+import { createToken } from '../../../src/utils/createToken';
+
+jest.mock('../../../src/utils/createToken');
 
 describe('AuthResolver unit', () => {
   let authResolver: AuthResolver;
@@ -73,6 +76,11 @@ describe('AuthResolver unit', () => {
   });
 
   describe('register mutation', () => {
+    const fakeToken = 'thisisthefaketoken';
+
+    // @ts-ignore
+    createToken.mockImplementationOnce(() => fakeToken);
+
     it('should call userService.create and mailService.sendVerificationEmail', async () => {
       const createUserData = {
         email: 'ben@ben.com',
@@ -94,7 +102,7 @@ describe('AuthResolver unit', () => {
       ).toHaveBeenCalledWith(
         createUserData.email,
         createUserData.username,
-        expect.any(String)
+        fakeToken
       );
     });
   });
