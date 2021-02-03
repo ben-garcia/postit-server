@@ -1,5 +1,6 @@
 import { ApolloServer } from 'apollo-server-express';
 import { createTestClient } from 'apollo-server-testing';
+import jwt from 'jsonwebtoken';
 import { getRepository } from 'typeorm';
 import { Container } from 'typedi';
 import {
@@ -30,9 +31,14 @@ describe('AuthResolver integration', () => {
 
     Container.set('userRepository', getRepository(User));
     Container.set('transporter', await createTransporter());
+    Container.set('jwt', jwt);
 
     const schema = await createSchema();
-    const server = new ApolloServer({ schema });
+    const server = new ApolloServer({
+      schema,
+      context: () => ({ res: { cookie: jest.fn() } }),
+    });
+
     const testServer = createTestClient(server);
 
     mutate = testServer.mutate;

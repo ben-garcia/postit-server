@@ -7,6 +7,9 @@ describe('AuthResolver unit', () => {
   let authResolver: AuthResolver;
 
   beforeEach(() => {
+    const mockJwt = {
+      sign: jest.fn(),
+    };
     const mockUserRepository = {
       create: jest.fn(),
       findOne: jest.fn(),
@@ -15,6 +18,11 @@ describe('AuthResolver unit', () => {
     const mockTransporter = {
       sendVerificationEmail: jest.fn(),
     };
+
+    function MockAuthService(this: any, jwt: typeof mockJwt) {
+      this.createTokens = jest.fn();
+      this.jwt = jwt;
+    }
 
     function MockMailService(this: any, transporter: typeof mockTransporter) {
       this.sendVerificationEmail = jest.fn();
@@ -25,7 +33,11 @@ describe('AuthResolver unit', () => {
       this: any,
       mockRepository: typeof mockUserRepository
     ) {
-      this.create = jest.fn();
+      this.create = jest.fn().mockReturnValue({
+        email: 'test@test.com',
+        username: 'testtest',
+        password: 'testtesttest',
+      });
       this.getAll = jest.fn();
       this.getByEmail = jest.fn();
       this.getById = jest.fn();
@@ -34,6 +46,7 @@ describe('AuthResolver unit', () => {
     }
 
     authResolver = new AuthResolver(
+      new (MockAuthService as any)(mockJwt),
       new (MockMailService as any)(mockTransporter),
       new (MockUserService as any)(mockUserRepository)
     );
@@ -81,19 +94,29 @@ describe('AuthResolver unit', () => {
     // @ts-ignore
     createToken.mockImplementationOnce(() => fakeToken);
 
-    it('should call userService.create and mailService.sendVerificationEmail', async () => {
+    it('should call mailService.sendVerificationEmail, userService.create, authService.createTokens and res.cookie', async () => {
+      const mockContext: any = {
+        res: {
+          cookie: jest.fn(),
+        },
+      };
+      const expectedCookieOptions = {
+        httpOnly: true,
+        secure: false,
+        signed: true,
+      };
       const createUserData = {
         email: 'ben@ben.com',
         password: 'benben',
         username: 'benben',
       };
 
-      await authResolver.register(createUserData);
+      authResolver.authService.createTokens = jest
+        .fn()
+        .mockReturnValue(['this', 'that']);
 
-      expect(authResolver.userService.create).toHaveBeenCalledTimes(1);
-      expect(authResolver.userService.create).toHaveBeenCalledWith(
-        createUserData
-      );
+      await authResolver.register(createUserData, mockContext);
+
       expect(
         authResolver.mailService.sendVerificationEmail
       ).toHaveBeenCalledTimes(1);
@@ -103,6 +126,37 @@ describe('AuthResolver unit', () => {
         createUserData.email,
         createUserData.username,
         fakeToken
+      );
+
+      expect(authResolver.userService.create).toHaveBeenCalledTimes(1);
+      expect(authResolver.userService.create).toHaveBeenCalledWith(
+        createUserData
+      );
+
+      expect(authResolver.authService.createTokens).toHaveBeenCalledTimes(1);
+      expect(authResolver.authService.createTokens).toHaveBeenCalledWith({
+        email: createUserData.email,
+        username: createUserData.username,
+      });
+
+      expect(mockContext.res.cookie).toHaveBeenCalledTimes(2);
+      expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
+        1,
+        'session-access-token',
+        'this',
+        {
+          ...expectedCookieOptions,
+          maxAge: 60 * 60 * 15,
+        }
+      );
+      expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
+        2,
+        'session-refresh-token',
+        'that',
+        {
+          ...expectedCookieOptions,
+          maxAge: 60 * 60 * 24 * 365,
+        }
       );
     });
   });
