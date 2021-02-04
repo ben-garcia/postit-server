@@ -18,6 +18,10 @@ describe('AuthResolver unit', () => {
     const mockTransporter = {
       sendVerificationEmail: jest.fn(),
     };
+    const mockIoRedis = {
+      del: jest.fn(),
+      setex: jest.fn(),
+    };
 
     function MockAuthService(this: any, jwt: typeof mockJwt) {
       this.createTokens = jest.fn();
@@ -27,6 +31,12 @@ describe('AuthResolver unit', () => {
     function MockMailService(this: any, transporter: typeof mockTransporter) {
       this.sendVerificationEmail = jest.fn();
       this.transporter = transporter;
+    }
+
+    function MockRedisService(this: any, mockRedis: any) {
+      this.redisClient = mockRedis;
+      this.add = jest.fn();
+      this.remove = jest.fn();
     }
 
     function MockUserService(
@@ -48,6 +58,7 @@ describe('AuthResolver unit', () => {
     authResolver = new AuthResolver(
       new (MockAuthService as any)(mockJwt),
       new (MockMailService as any)(mockTransporter),
+      new (MockRedisService as any)(mockIoRedis),
       new (MockUserService as any)(mockUserRepository)
     );
   });
@@ -94,26 +105,28 @@ describe('AuthResolver unit', () => {
     // @ts-ignore
     createToken.mockImplementationOnce(() => fakeToken);
 
-    it('should call mailService.sendVerificationEmail, userService.create, authService.createTokens and res.cookie', async () => {
-      const mockContext: any = {
-        res: {
-          cookie: jest.fn(),
-        },
+    it('should call mailService.sendVerificationEmail, userService.create, authService.createTokens, res.cookie and redisService.add', async () => {
+      const createUserData = {
+        email: 'ben@ben.com',
+        password: 'benben',
+        username: 'benben',
       };
       const expectedCookieOptions = {
         httpOnly: true,
         secure: false,
         signed: true,
       };
-      const createUserData = {
-        email: 'ben@ben.com',
-        password: 'benben',
-        username: 'benben',
+      const mockContext: any = {
+        res: {
+          cookie: jest.fn(),
+        },
       };
+      const accessToken = 'accessToken';
+      const refreshToken = 'refreshToken';
 
       authResolver.authService.createTokens = jest
         .fn()
-        .mockReturnValue(['this', 'that']);
+        .mockReturnValue([accessToken, refreshToken]);
 
       await authResolver.register(createUserData, mockContext);
 
@@ -143,7 +156,7 @@ describe('AuthResolver unit', () => {
       expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
         1,
         'session-access-token',
-        'this',
+        accessToken,
         {
           ...expectedCookieOptions,
           maxAge: 60 * 60 * 15,
@@ -152,11 +165,18 @@ describe('AuthResolver unit', () => {
       expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
         2,
         'session-refresh-token',
-        'that',
+        refreshToken,
         {
           ...expectedCookieOptions,
           maxAge: 60 * 60 * 24 * 365,
         }
+      );
+
+      expect(authResolver.redisService.add).toHaveBeenCalledTimes(1);
+      expect(authResolver.redisService.add).toHaveBeenCalledWith(
+        `${createUserData.username}:refreshToken`,
+        60 * 60 * 24 * 365, // 1 year
+        refreshToken
       );
     });
   });

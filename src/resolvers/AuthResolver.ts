@@ -14,7 +14,12 @@ import {
 
 import { IsEmailUnique, IsUsernameUnique } from '../decorators';
 import { User } from '../entities';
-import { AuthService, MailService, UserService } from '../services';
+import {
+  AuthService,
+  MailService,
+  RedisService,
+  UserService,
+} from '../services';
 import { MyContext } from '../types';
 import { createToken } from '../utils';
 
@@ -88,15 +93,18 @@ class UsernameArg {
 class AuthResolver {
   public authService: AuthService;
   public mailService: MailService;
+  public redisService: RedisService;
   public userService: UserService;
 
   constructor(
     authService: AuthService,
     mailService: MailService,
+    redisService: RedisService,
     userService: UserService
   ) {
     this.authService = authService;
     this.mailService = mailService;
+    this.redisService = redisService;
     this.userService = userService;
   }
 
@@ -187,6 +195,13 @@ class AuthResolver {
         ...cookieOptions,
         maxAge: 60 * 60 * 24 * 365, // 1 year
       });
+
+      // save the refresh token to redis.
+      await this.redisService.add(
+        `${username}:refreshToken`,
+        60 * 60 * 24 * 365, // 1 year
+        refreshToken
+      );
 
       return true;
     } catch (e) {

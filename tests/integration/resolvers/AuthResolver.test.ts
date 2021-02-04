@@ -1,17 +1,21 @@
 import { ApolloServer } from 'apollo-server-express';
 import { createTestClient } from 'apollo-server-testing';
+import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import { getRepository } from 'typeorm';
 import { Container } from 'typedi';
 
-import MailService from '../../../src/services/MailService';
+import { MailService, RedisService } from '../../../src/services';
 import {
+  createRedisClient,
   createTestConnection,
   createTransporter,
   createSchema,
   TestUtils,
 } from '../../../src/utils';
 import { User } from '../../../src/entities';
+
+dotenv.config();
 
 describe('AuthResolver integration', () => {
   let mutate: any;
@@ -34,6 +38,7 @@ describe('AuthResolver integration', () => {
     Container.set('userRepository', getRepository(User));
     Container.set('transporter', await createTransporter());
     Container.set('jwt', jwt);
+    Container.set('redisClient', createRedisClient());
 
     const schema = await createSchema();
     const server = new ApolloServer({
@@ -75,6 +80,13 @@ describe('AuthResolver integration', () => {
               },
             }),
           }));
+
+        // Mock the implementation of the MailService.sendVerificationEmail
+        // There is no need to send test email to ethereal during testing.
+        // @ts-ignore
+        jest.spyOn(RedisService.prototype, 'add').mockImplementation(() => ({
+          setex: jest.fn(),
+        }));
 
         const expected = { register: true };
         const response = await mutate({
