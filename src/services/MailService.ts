@@ -97,8 +97,11 @@ class MailService {
       info.response.lastIndexOf('=') + 1,
       info.response.length - 1
     );
-    // eslint-disable-next-line
-    console.log(`https://ethereal.email/message/${previewUrl}`);
+
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line
+			console.log(`https://ethereal.email/message/${previewUrl}`);
+    }
   }
 }
 

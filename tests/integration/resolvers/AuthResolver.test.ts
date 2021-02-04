@@ -3,6 +3,8 @@ import { createTestClient } from 'apollo-server-testing';
 import jwt from 'jsonwebtoken';
 import { getRepository } from 'typeorm';
 import { Container } from 'typedi';
+
+import MailService from '../../../src/services/MailService';
 import {
   createTestConnection,
   createTransporter,
@@ -46,6 +48,7 @@ describe('AuthResolver integration', () => {
   });
 
   beforeEach(async () => {
+    jest.resetAllMocks();
     await testUtils.clearTables('users');
   });
 
@@ -56,6 +59,23 @@ describe('AuthResolver integration', () => {
   describe('Mutations', () => {
     describe('register', () => {
       it('should succesfully create a user', async () => {
+        // Mock the implementation of the MailService.sendVerificationEmail
+        // There is no need to send test email to ethereal during testing.
+        jest
+          .spyOn(MailService.prototype, 'sendVerificationEmail')
+          // @ts-ignore
+          .mockImplementation(() => ({
+            sendMail: jest.fn().mockReturnValue({
+              then: jest.fn(),
+              catch: jest.fn(),
+              response: {
+                length: jest.fn(),
+                lastIndexOf: jest.fn(),
+                substring: jest.fn(),
+              },
+            }),
+          }));
+
         const expected = { register: true };
         const response = await mutate({
           mutation: registerMutation,
