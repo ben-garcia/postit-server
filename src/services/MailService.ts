@@ -43,7 +43,10 @@ class MailService {
 						 ${username} Postit account. But wait, we’re not done yet...
 
 						 To finish verifying your email address and securing your account, click the
-						 button below.`,
+						 button below.
+
+						${clientUrl}/verification/${base64String}
+			`,
       html: `
 					<div style="width: 100%; height: 100%">
 						<div style="line-height: 18px;

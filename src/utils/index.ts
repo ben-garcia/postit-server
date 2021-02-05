@@ -3,6 +3,7 @@ import { createTestConnection } from './createTestConnection';
 import { createToken } from './createToken';
 import { createTransporter } from './createTransporter';
 import { createSchema } from './createSchema';
+import { injectProperties } from './injectProperties';
 import TestUtils from './TestUtils';
 
 export {
@@ -11,5 +12,6 @@ export {
   createToken,
   createTransporter,
   createSchema,
+  injectProperties,
   TestUtils,
 };
