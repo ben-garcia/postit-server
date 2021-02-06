@@ -8,7 +8,7 @@ import { Container } from 'typedi';
 import { createConnection, getRepository } from 'typeorm';
 
 import { User } from './entities';
-import { createTransporter, createSchema } from './utils';
+import { createRedisClient, createTransporter, createSchema } from './utils';
 
 dotenv.config();
 
@@ -20,6 +20,7 @@ dotenv.config();
   Container.set('userRepository', getRepository(User));
   Container.set('transporter', await createTransporter());
   Container.set('jwt', jwt);
+  Container.set('redisClient', createRedisClient());
 
   const app = express();
   const cookieSecret = process.env.COOKIE_SECRET || 'cookiesecret';
