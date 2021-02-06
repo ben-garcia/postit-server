@@ -7,6 +7,7 @@ import { Container } from 'typedi';
 
 import { MailService, RedisService } from '../../../src/services';
 import {
+  createEmailTemplate,
   createRedisClient,
   createTestConnection,
   createTransporter,
@@ -39,6 +40,7 @@ describe('AuthResolver integration', () => {
     Container.set('transporter', await createTransporter());
     Container.set('jwt', jwt);
     Container.set('redisClient', createRedisClient());
+    Container.set('emailTemplate', createEmailTemplate());
 
     const schema = await createSchema();
     const server = new ApolloServer({

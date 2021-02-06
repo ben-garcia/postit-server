@@ -2,8 +2,6 @@ import Email from 'email-templates';
 import { Transporter } from 'nodemailer';
 import { Inject, Service } from 'typedi';
 
-import { join, resolve } from 'path';
-
 /**
  * This service sends emails to users for
  *
@@ -16,6 +14,7 @@ import { join, resolve } from 'path';
  */
 @Service()
 class MailService {
+  private emailTemplate: Email;
   private transporter: Transporter;
 
   /**
@@ -24,7 +23,11 @@ class MailService {
    * transporter is the name of the service, which is used
    * when setting it's value by calling Container.set.
    */
-  constructor(@Inject('transporter') transporter: Transporter) {
+  constructor(
+    @Inject('emailTemplate') emailTemplate: Email,
+    @Inject('transporter') transporter: Transporter
+  ) {
+    this.emailTemplate = emailTemplate;
     this.transporter = transporter;
   }
 
@@ -37,53 +40,8 @@ class MailService {
     base64String: string
   ) {
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-    // @ts-ignore
-    const emailTemplate = new Email({
-      juice: true,
-      juiceResources: {
-        preserveImportant: true,
-        webResources: {
-          relativeTo: join(__dirname, '..', 'emails', 'verification'),
-        },
-      },
-      juiceSettings: {
-        tableElements: ['TABLE'],
-      },
-      /*
-      preview: {
-        open: {
-          app: 'firefox',
-          wait: false,
-        },
-      },
-      message: {
-        from: 'from@email.com',
-        to: 'bengarcia77@hotmail.com',
-      },
-      transport: this.transporter,
-			*/
-      views: {
-        options: {
-          extension: 'hbs',
-        },
-        root: resolve('src', 'emails'),
-      },
-    });
-
-    /*
-    // @ts-ignore
-    const response = await emailTemplate.send({
-      template: 'verification',
-      locals: {
-        base64String,
-        clientUrl,
-        email,
-        username,
-      },
-    });
-		*/
-
-    const { html, subject, text } = await emailTemplate.renderAll(
+    // build the template using html.hbs, text.hbs, subject.hbs, and style.css
+    const { html, subject, text } = await this.emailTemplate.renderAll(
       'verification',
       {
         base64String,
