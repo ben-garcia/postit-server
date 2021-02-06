@@ -98,7 +98,6 @@ class MailService {
       html,
       subject,
       text,
-      // subject: 'Verify your Postit email address',
       to: email,
     };
 
