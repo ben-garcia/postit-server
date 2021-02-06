@@ -2,51 +2,42 @@
 <html>
 	<head>
 		<title>Email Verification</title>
+		<link data-inline="data-inline" href="./style.css" rel="stylesheet"></link>
 	</head>
 	<body>
-		<div style="width: 100%; height: 100%">
-			<div style="line-height: 18px;
-									font-family: Helvetica, Arial, sans-serif;
-									margin: 0 auto;
-									width: 45%;">
-				<div style="display: flex; justify-content: space-between;">
-					<span style="font-size: 30px">postit</span>	
-					<a style="text-decoration: none" href="{{ clientUrl }}/user/{{ username }}"><span style="color: #7A9299; font-size: 10px">u/{{ username }}</span></a>
+		<div class="container">
+			<div class="container__inner">
+				<div class="top-nav">
+					<span class="text-lg">postit</span>	
+					<a class="no-underline" href="{{ clientUrl }}/user/{{ username }}">
+						<span class="color-gray text-sm">
+							u/{{ username }}
+						</span>
+					</a>
 				</div>
 				<br />
 				<br />
-				<p style="color: #000">
-					<div>
-						Hi there,
-					</div>
-					<br />
-					<div>
+				<div class="color-black">
+					<p>Hi there,</p>
+					<p>
 						Your email address {{ email }} has been added to your
 						<br />
 						{{ username }} Postit account. But wait, we’re not done yet...
-					</div>
-					<br />
-					<div>
+					</p>
+					<p>
 						To finish verifying your email address and securing your account, click the
 						<br />
 						button below.
-					</div>
-				</p>
+					</p>
+				</div>
 				<div style="display: flex; justify-content: center; margin-top: 30px;">
-				<a
-					href="{{ clientUrl }}/verification/{{ base64String }}"
-					style="background: #0079D3;
-								 border-radius: 4px;
-								 font-size: 12px;
-								 font-weight: 700;
-								 padding: 8px;
-								 text-align: center;
-								 text-decoration: none;"
-				>
-					<span style="color: #FFF; padding: 0 22px;">
-						Verify Email Address
-					</span>
-				</a>
+					<a
+						href="{{ clientUrl }}/verification/{{ base64String }}"
+						class="button no-underline">
+						<span class="button__text color-white">
+							Verify Email Address
+						</span>
+					</a>
 			</div>
 		</div>
 	</body>
