@@ -1,12 +1,17 @@
 import { ApolloServer } from 'apollo-server-express';
 import { createTestClient } from 'apollo-server-testing';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+import { Container } from 'typedi';
+import { getRepository } from 'typeorm';
 
 import { MailService, RedisService } from '../../../src/services';
 import {
+  createEmailTemplate,
+  createRedisClient,
   createTestConnection,
+  createTransporter,
   createSchema,
-  injectProperties,
   TestUtils,
 } from '../../../src/utils';
 import { User } from '../../../src/entities';
@@ -31,8 +36,11 @@ describe('AuthResolver integration', () => {
   beforeAll(async () => {
     testUtils = new TestUtils(await createTestConnection());
 
-    // Set values on the injected properties.
-    injectProperties();
+    Container.set('userRepository', getRepository(User));
+    Container.set('transporter', await createTransporter());
+    Container.set('jwt', jwt);
+    Container.set('redisClient', createRedisClient());
+    Container.set('emailTemplate', createEmailTemplate());
 
     const schema = await createSchema();
     const server = new ApolloServer({

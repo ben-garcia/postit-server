@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Email Verification</title>
+		<link data-inline="data-inline" href="./style.css" rel="stylesheet"></link>
+	</head>
+	<body>
+		<div class="container">
+			<div class="container__inner">
+				<div class="top-nav">
+					<span class="text-lg">postit</span>	
+					<a class="no-underline" href="{{ clientUrl }}/user/{{ username }}">
+						<span class="color-gray text-sm">
+							u/{{ username }}
+						</span>
+					</a>
+				</div>
+				<br />
+				<br />
+				<div class="color-black">
+					<p>Hi there,</p>
+					<p>
+						Your email address {{ email }} has been added to your
+						<br />
+						{{ username }} Postit account. But wait, we’re not done yet...
+					</p>
+					<p>
+						To finish verifying your email address and securing your account, click the
+						<br />
+						button below.
+					</p>
+				</div>
+				<div class="button-container">
+					<a
+						href="{{ clientUrl }}/verification/{{ base64String }}"
+						class="button no-underline">
+						<span class="button__text color-white">
+							Verify Email Address
+						</span>
+					</a>
+			</div>
+		</div>
+	</body>
+</html>
+

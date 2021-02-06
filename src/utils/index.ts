@@ -1,3 +1,4 @@
+import { createEmailTemplate } from './createEmailTemplate';
 import { createRedisClient } from './createRedisClient';
 import { createTestConnection } from './createTestConnection';
 import { createToken } from './createToken';
@@ -7,6 +8,7 @@ import { injectProperties } from './injectProperties';
 import TestUtils from './TestUtils';
 
 export {
+  createEmailTemplate,
   createRedisClient,
   createTestConnection,
   createToken,

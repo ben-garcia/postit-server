@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MailService sendVerificationEmail should match html snapshot 1`] = `
+"<!DOCTYPE html>
+<html>
+	<head>
+		<title>Email Verification</title>
+		
+	</head>
+	<body>
+		<div class=\\"container\\" style=\\"height: 100%; width: 100%;\\">
+			<div class=\\"container__inner\\" style=\\"font-family: Helvetica, Arial, sans-serif; line-height: 18px; margin: 0 auto; width: 45%;\\">
+				<div class=\\"top-nav\\" style=\\"display: flex; justify-content: space-between;\\">
+					<span class=\\"text-lg\\" style=\\"font-size: 30px;\\">postit</span>	
+					<a class=\\"no-underline\\" href=\\"http://localhost:3000/user/bar\\" style=\\"text-decoration: none;\\">
+						<span class=\\"color-gray text-sm\\" style=\\"font-size: 10px; color: #7a9299;\\">
+							u/bar
+						</span>
+					</a>
+				</div>
+				<br>
+				<br>
+				<div class=\\"color-black\\" style=\\"color: #000;\\">
+					<p>Hi there,</p>
+					<p>
+						Your email address bar@example.com has been added to your
+						<br>
+						bar Postit account. But wait, we’re not done yet...
+					</p>
+					<p>
+						To finish verifying your email address and securing your account, click the
+						<br>
+						button below.
+					</p>
+				</div>
+				<div class=\\"button-container\\" style=\\"display: flex; justify-content: center; margin-top: 30px;\\">
+					<a href=\\"http://localhost:3000/verification/jksjlfjlaksjkslajfksafj\\" class=\\"button no-underline\\" style=\\"text-decoration: none; background: #0079d3; border-radius: 4px; font-size: 12px; font-weight: 700; padding: 8px; text-align: center;\\">
+						<span class=\\"button__text color-white\\" style=\\"color: #fff; padding: 0 22px;\\">
+							Verify Email Address
+						</span>
+					</a>
+			</div>
+		</div>
+	</div></body>
+</html>
+
+"
+`;
+
+exports[`MailService sendVerificationEmail should match text snapshot 1`] = `
+"Postit		u/bar [http://localhost:3000/user/bar]
+
+Hi there,
+
+Your email address bar@example.com has been added to your
+bar Postit account. But wait, we’re not done yet...
+
+To finish verifying your email address and securing your account, click the
+button below.
+
+Verify Email Address
+[http://localhost:3000/verification/jksjlfjlaksjkslajfksafj]
+"
+`;

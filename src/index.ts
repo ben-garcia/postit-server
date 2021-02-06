@@ -3,9 +3,17 @@ import { ApolloServer } from 'apollo-server-express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import express from 'express';
-import { createConnection } from 'typeorm';
+import jwt from 'jsonwebtoken';
+import { Container } from 'typedi';
+import { createConnection, getRepository } from 'typeorm';
 
-import { createSchema, injectProperties } from './utils';
+import { User } from './entities';
+import {
+  createEmailTemplate,
+  createRedisClient,
+  createTransporter,
+  createSchema,
+} from './utils';
 
 dotenv.config();
 
@@ -14,7 +22,11 @@ dotenv.config();
   await createConnection();
 
   // Set values on the injected properties.
-  injectProperties();
+  Container.set('userRepository', getRepository(User));
+  Container.set('transporter', await createTransporter());
+  Container.set('jwt', jwt);
+  Container.set('redisClient', createRedisClient());
+  Container.set('emailTemplate', createEmailTemplate());
 
   const app = express();
   const cookieSecret = process.env.COOKIE_SECRET || 'cookiesecret';
