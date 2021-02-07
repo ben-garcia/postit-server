@@ -83,7 +83,7 @@
       "git add"
     ],
     "tests/**/*.test.ts": [
-      "jest"
+      "jest --forceExit"
     ],
     "**/*.{json,md}": [
       "prettier --write"
