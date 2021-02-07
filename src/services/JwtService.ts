@@ -13,7 +13,7 @@ interface Payload {
  * revoking refresh token.
  */
 @Service()
-class AuthService {
+class JwtService {
   private jwt: typeof JWT;
 
   constructor(@Inject('jwt') jwt: typeof JWT) {
@@ -43,4 +43,4 @@ class AuthService {
   }
 }
 
-export default AuthService;
+export default JwtService;
