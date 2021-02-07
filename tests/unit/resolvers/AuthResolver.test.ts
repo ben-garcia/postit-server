@@ -23,7 +23,7 @@ describe('AuthResolver unit', () => {
       setex: jest.fn(),
     };
 
-    function MockAuthService(this: any, jwt: typeof mockJwt) {
+    function MockJwtService(this: any, jwt: typeof mockJwt) {
       this.createTokens = jest.fn();
       this.jwt = jwt;
     }
@@ -56,7 +56,7 @@ describe('AuthResolver unit', () => {
     }
 
     authResolver = new AuthResolver(
-      new (MockAuthService as any)(mockJwt),
+      new (MockJwtService as any)(mockJwt),
       new (MockMailService as any)(mockTransporter),
       new (MockRedisService as any)(mockIoRedis),
       new (MockUserService as any)(mockUserRepository)
@@ -67,45 +67,13 @@ describe('AuthResolver unit', () => {
     expect(authResolver).toBeDefined();
   });
 
-  describe('getAllUsers query', () => {
-    it('should call getAll method from userService', async () => {
-      await authResolver.getAllUsers();
-
-      expect(authResolver.userService.getAll).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('isEmailUnique query', () => {
-    it('should call getByEmail method from userService', async () => {
-      const email = 'ben@ben.com';
-
-      await authResolver.isEmailUnique({ email });
-
-      expect(authResolver.userService.getByEmail).toHaveBeenCalledTimes(1);
-      expect(authResolver.userService.getByEmail).toHaveBeenCalledWith(email);
-    });
-  });
-
-  describe('isUsernameUnique query', () => {
-    it('should call getByUsername method from userService', async () => {
-      const username = 'benben';
-
-      await authResolver.isUsernameUnique({ username });
-
-      expect(authResolver.userService.getByUsername).toHaveBeenCalledTimes(1);
-      expect(authResolver.userService.getByUsername).toHaveBeenCalledWith(
-        username
-      );
-    });
-  });
-
   describe('register mutation', () => {
     const fakeToken = 'thisisthefaketoken';
 
     // @ts-ignore
     createToken.mockImplementationOnce(() => fakeToken);
 
-    it('should call mailService.sendVerificationEmail, userService.create, authService.createTokens, res.cookie and redisService.add', async () => {
+    it('should call mailService.sendVerificationEmail, userService.create, jwtService.createTokens, res.cookie and redisService.add', async () => {
       const createUserData = {
         email: 'ben@ben.com',
         password: 'benben',
@@ -124,7 +92,7 @@ describe('AuthResolver unit', () => {
       const accessToken = 'accessToken';
       const refreshToken = 'refreshToken';
 
-      authResolver.authService.createTokens = jest
+      authResolver.jwtService.createTokens = jest
         .fn()
         .mockReturnValue([accessToken, refreshToken]);
 
@@ -146,8 +114,8 @@ describe('AuthResolver unit', () => {
         createUserData
       );
 
-      expect(authResolver.authService.createTokens).toHaveBeenCalledTimes(1);
-      expect(authResolver.authService.createTokens).toHaveBeenCalledWith({
+      expect(authResolver.jwtService.createTokens).toHaveBeenCalledTimes(1);
+      expect(authResolver.jwtService.createTokens).toHaveBeenCalledWith({
         email: createUserData.email,
         username: createUserData.username,
       });
