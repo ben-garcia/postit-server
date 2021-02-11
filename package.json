@@ -59,10 +59,14 @@
   },
   "scripts": {
     "start": "nodemon --exec ts-node src/index.ts",
+    "format": "prettier --write \"./**/*.{ts,json,md}\"",
+    "lint": "eslint src/**/*.ts",
     "test": "jest --watch --detectOpenHandles",
     "test:coverage": "jest --collectCoverage",
-    "format": "prettier --write \"./**/*.{ts,json,md}\"",
-    "lint": "eslint src/**/*.ts"
+    "db:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate",
+    "db:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
+    "db:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert",
+    "db:show": "ts-node ./node_modules/typeorm/cli.js migration:show"
   },
   "keywords": [
     "apollo-server",

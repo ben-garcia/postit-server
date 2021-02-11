@@ -27,10 +27,6 @@ class User extends BaseEntity {
   @Index()
   username: string;
 
-  @Column({ default: false })
-  @Field(() => Boolean)
-  hasValidated: boolean;
-
   @Column()
   password: string;
 
