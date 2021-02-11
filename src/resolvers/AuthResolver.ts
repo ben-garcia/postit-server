@@ -2,7 +2,7 @@ import { IsEmail, MinLength, MaxLength } from 'class-validator';
 import { Service } from 'typedi';
 import { Arg, Ctx, Field, InputType, Mutation, Resolver } from 'type-graphql';
 
-import { IsEmailUnique, IsUsernameUnique } from '../decorators';
+import { IsUsernameUnique } from '../decorators';
 import {
   JwtService,
   MailService,
@@ -27,7 +27,6 @@ import { createToken } from '../utils';
 class RegisterInput {
   @Field()
   @IsEmail()
-  @IsEmailUnique({ message: 'That email is already taken' })
   email: string;
 
   @Field()

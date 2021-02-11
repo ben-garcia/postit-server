@@ -100,30 +100,6 @@ describe('AuthResolver integration', () => {
       });
 
       describe('email', () => {
-        it('should fail when trying to add user with an email that is already taken', async () => {
-          await testUtils
-            .getConnection()
-            .getRepository(User)
-            .create(fakeUser)
-            .save();
-
-          const expected = 'That email is already taken';
-          const response = await mutate({
-            mutation: registerMutation,
-            variables: {
-              createUserData: {
-                ...fakeUser,
-                username: 'benbenben',
-              },
-            },
-          });
-          const errors =
-            response.errors[0].extensions.exception.validationErrors;
-
-          expect(errors.length).toBe(1);
-          expect(errors[0].constraints.isEmailUnique).toEqual(expected);
-        });
-
         it('should fail when email isnt an email format', async () => {
           const expected = 'email must be an email';
           const response = await mutate({

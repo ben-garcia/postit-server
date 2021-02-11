@@ -55,64 +55,11 @@ describe('AuthResolver integration', () => {
   });
 
   describe('Queries', () => {
-    const isEmailUniqueQuery = `
-			query IsEmailUnique($email: String!) {
-			  isEmailUnique(email: $email)
-		  }
-		`;
     const isUsernameUnique = `
 			query IsUsernameUnique($username: String!) {
 				isUsernameUnique(username: $username)
 			}
 		`;
-
-    describe('isEmailUnique', () => {
-      it('should succeed when its a valid email and it isnt in the db', async () => {
-        const expected = { isEmailUnique: true };
-        const response = await query({
-          query: isEmailUniqueQuery,
-          variables: {
-            email: 'ben2@ben.com',
-          },
-        });
-
-        expect(response.data).toEqual(expected);
-      });
-
-      it('should fail when email exists in the db', async () => {
-        await testUtils
-          .getConnection()
-          .getRepository(User)
-          .create(fakeUser)
-          .save();
-
-        const expected = 'That email is already taken';
-        const response = await query({
-          query: isEmailUniqueQuery,
-          variables: {
-            email: fakeUser.email,
-          },
-        });
-        const errors = response.errors[0].extensions.exception.validationErrors;
-
-        expect(errors.length).toBe(1);
-        expect(errors[0].constraints.isEmailUnique).toEqual(expected);
-      });
-
-      it('should fail when email is invalid', async () => {
-        const expected = 'email must be an email';
-        const response = await query({
-          query: isEmailUniqueQuery,
-          variables: {
-            email: 'ben.com',
-          },
-        });
-        const errors = response.errors[0].extensions.exception.validationErrors;
-
-        expect(errors.length).toBe(1);
-        expect(errors[0].constraints.isEmail).toEqual(expected);
-      });
-    });
 
     describe('isUsernameUnique', () => {
       it('should succeed when it meets the length requirements and isnt in the db', async () => {

@@ -43,17 +43,6 @@ describe('UserResolver unit', () => {
     });
   });
 
-  describe('isEmailUnique query', () => {
-    it('should call getByEmail method from userService', async () => {
-      const email = 'ben@ben.com';
-
-      await userResolver.isEmailUnique({ email });
-
-      expect(userResolver.userService.getByEmail).toHaveBeenCalledTimes(1);
-      expect(userResolver.userService.getByEmail).toHaveBeenCalledWith(email);
-    });
-  });
-
   describe('isUsernameUnique query', () => {
     it('should call getByUsername method from userService', async () => {
       const username = 'benben';

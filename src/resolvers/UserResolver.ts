@@ -1,25 +1,10 @@
-import { IsEmail, MinLength, MaxLength } from 'class-validator';
+import { MinLength, MaxLength } from 'class-validator';
 import { Service } from 'typedi';
 import { Args, ArgsType, Field, Query, Resolver } from 'type-graphql';
 
-import { IsEmailUnique, IsUsernameUnique } from '../decorators';
+import { IsUsernameUnique } from '../decorators';
 import { User } from '../entities';
 import { UserService } from '../services';
-
-/**
- * Validates email argument passed in to isEmailUnique.
- *
- * Must be a valid email address
- * Must be unique, there can be no user in the db with that
- * same email.
- */
-@ArgsType()
-class EmailArg {
-  @Field()
-  @IsEmail()
-  @IsEmailUnique({ message: 'That email is already taken' })
-  email: string;
-}
 
 /**
  * Validates email argument passed in to isUsernameUnique.
@@ -62,25 +47,6 @@ class UserResolver {
 			console.log('AuthResolver.getAllUsers error: ', e);
 
       return undefined;
-    }
-  }
-
-  /**
-   * Checks if there is a user with the same email and
-   * that email is valid.
-   */
-  @Query(() => Boolean)
-  async isEmailUnique(@Args() { email }: EmailArg): Promise<boolean> {
-    try {
-      const user = await this.userService.getByEmail(email);
-      if (user) {
-        return false;
-      }
-      return true;
-    } catch (e) {
-      // eslint-disable-next-line
-      console.log('isEmailUnique error: ', e);
-      return false;
     }
   }
 

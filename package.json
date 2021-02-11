@@ -83,7 +83,7 @@
       "git add"
     ],
     "tests/**/*.test.ts": [
-      "jest --forceExit"
+      "jest --detectOpenHandles --forceExit"
     ],
     "**/*.{json,md}": [
       "prettier --write"
