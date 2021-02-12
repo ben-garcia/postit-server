@@ -5,11 +5,15 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   Index,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Field, ObjectType, ID } from 'type-graphql';
+
+import { Profile } from '.';
 
 @ObjectType()
 @Entity('users')
@@ -22,13 +26,18 @@ class User extends BaseEntity {
   @Field(() => String)
   email: string;
 
-  @Column({ unique: true })
+  @Column({ length: 20, unique: true })
   @Field(() => String)
   @Index()
   username: string;
 
   @Column()
   password: string;
+
+  @Field(() => Profile)
+  @OneToOne(() => Profile)
+  @JoinColumn()
+  profile: Profile;
 
   @CreateDateColumn()
   @Field(() => String)

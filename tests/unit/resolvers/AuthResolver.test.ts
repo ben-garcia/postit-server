@@ -10,6 +10,10 @@ describe('AuthResolver unit', () => {
     const mockJwt = {
       sign: jest.fn(),
     };
+    const mockProfileRepository = {
+      create: jest.fn(),
+      save: jest.fn(),
+    };
     const mockUserRepository = {
       create: jest.fn(),
       findOne: jest.fn(),
@@ -39,6 +43,17 @@ describe('AuthResolver unit', () => {
       this.remove = jest.fn();
     }
 
+    function MockProfileService(
+      this: any,
+      mockRepository: typeof mockProfileRepository
+    ) {
+      this.create = jest.fn().mockReturnValue({
+        id: 1,
+      });
+      this.getAll = jest.fn();
+      this.profileRepository = mockRepository;
+    }
+
     function MockUserService(
       this: any,
       mockRepository: typeof mockUserRepository
@@ -58,6 +73,7 @@ describe('AuthResolver unit', () => {
     authResolver = new AuthResolver(
       new (MockJwtService as any)(mockJwt),
       new (MockMailService as any)(mockTransporter),
+      new (MockProfileService as any)(mockProfileRepository),
       new (MockRedisService as any)(mockIoRedis),
       new (MockUserService as any)(mockUserRepository)
     );
@@ -73,7 +89,7 @@ describe('AuthResolver unit', () => {
     // @ts-ignore
     createToken.mockImplementationOnce(() => fakeToken);
 
-    it('should call mailService.sendVerificationEmail, userService.create, jwtService.createTokens, res.cookie and redisService.add', async () => {
+    it('should call mailService.sendVerificationEmail, profileService.create, userService.create, jwtService.createTokens, res.cookie and redisService.add', async () => {
       const createUserData = {
         email: 'ben@ben.com',
         password: 'benben',
@@ -91,6 +107,10 @@ describe('AuthResolver unit', () => {
       };
       const accessToken = 'accessToken';
       const refreshToken = 'refreshToken';
+      const expectedCreateUserParams = {
+        ...createUserData,
+        profile: { id: 1 },
+      };
 
       authResolver.jwtService.createTokens = jest
         .fn()
@@ -109,9 +129,11 @@ describe('AuthResolver unit', () => {
         fakeToken
       );
 
+      expect(authResolver.profileService.create).toHaveBeenCalledTimes(1);
+
       expect(authResolver.userService.create).toHaveBeenCalledTimes(1);
       expect(authResolver.userService.create).toHaveBeenCalledWith(
-        createUserData
+        expectedCreateUserParams
       );
 
       expect(authResolver.jwtService.createTokens).toHaveBeenCalledTimes(1);

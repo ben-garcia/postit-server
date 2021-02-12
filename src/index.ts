@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { Container } from 'typedi';
 import { createConnection, getRepository } from 'typeorm';
 
-import { User } from './entities';
+import { Profile, User } from './entities';
 import {
   createEmailTemplate,
   createRedisClient,
@@ -23,6 +23,7 @@ dotenv.config();
 
   // Set values on the injected properties.
   Container.set('userRepository', getRepository(User));
+  Container.set('profileRepository', getRepository(Profile));
   Container.set('transporter', await createTransporter());
   Container.set('jwt', jwt);
   Container.set('redisClient', createRedisClient());

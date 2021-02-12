@@ -6,6 +6,7 @@ import { IsUsernameUnique } from '../decorators';
 import {
   JwtService,
   MailService,
+  ProfileService,
   RedisService,
   UserService,
 } from '../services';
@@ -49,17 +50,20 @@ class RegisterInput {
 class AuthResolver {
   public jwtService: JwtService;
   public mailService: MailService;
+  public profileService: ProfileService;
   public redisService: RedisService;
   public userService: UserService;
 
   constructor(
     jwtService: JwtService,
     mailService: MailService,
+    profileService: ProfileService,
     redisService: RedisService,
     userService: UserService
   ) {
     this.jwtService = jwtService;
     this.mailService = mailService;
+    this.profileService = profileService;
     this.redisService = redisService;
     this.userService = userService;
   }
@@ -79,8 +83,9 @@ class AuthResolver {
         signed: true,
       };
       const { email, username } = createUserData;
+      const profile = await this.profileService.create();
 
-      await this.userService.create(createUserData);
+      await this.userService.create({ ...createUserData, profile });
       await this.mailService.sendVerificationEmail(
         email,
         username,
