@@ -59,8 +59,17 @@ describe('UserService', () => {
 
   describe('create', () => {
     it('should call the create and save methods from the model', async () => {
-      const user = {
+      const user: any = {
         email: 'test@test.com',
+        generalPreferences: {
+          id: 1,
+        },
+        notificationPreferences: {
+          id: 2,
+        },
+        profile: {
+          id: 3,
+        },
         password: 'benbenben',
         username: 'benben',
       };

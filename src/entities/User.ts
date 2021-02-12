@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 import { Field, ObjectType, ID } from 'type-graphql';
 
-import { GeneralPreferences, Profile } from '.';
+import { GeneralPreferences, NotificationPreferences, Profile } from '.';
 
 @ObjectType()
 @Entity('users')
@@ -26,10 +26,15 @@ class User extends BaseEntity {
   @Field(() => String)
   email: string;
 
-  @Field(() => GeneralPreferences)
+  @Field(() => GeneralPreferences, { nullable: true })
   @OneToOne(() => GeneralPreferences)
   @JoinColumn()
   generalPreferences: GeneralPreferences;
+
+  @Field(() => NotificationPreferences, { nullable: true })
+  @OneToOne(() => NotificationPreferences)
+  @JoinColumn()
+  notificationPreferences: NotificationPreferences;
 
   @Column({ length: 20, unique: true })
   @Field(() => String)
@@ -39,7 +44,7 @@ class User extends BaseEntity {
   @Column()
   password: string;
 
-  @Field(() => Profile)
+  @Field(() => Profile, { nullable: true })
   @OneToOne(() => Profile)
   @JoinColumn()
   profile: Profile;

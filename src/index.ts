@@ -7,7 +7,12 @@ import jwt from 'jsonwebtoken';
 import { Container } from 'typedi';
 import { createConnection, getRepository } from 'typeorm';
 
-import { GeneralPreferences, Profile, User } from './entities';
+import {
+  GeneralPreferences,
+  NotificationPreferences,
+  Profile,
+  User,
+} from './entities';
 import {
   createEmailTemplate,
   createRedisClient,
@@ -27,6 +32,10 @@ dotenv.config();
   Container.set(
     'generalPreferencesRepository',
     getRepository(GeneralPreferences)
+  );
+  Container.set(
+    'notificationPreferencesRepository',
+    getRepository(NotificationPreferences)
   );
   Container.set('transporter', await createTransporter());
   Container.set('jwt', jwt);

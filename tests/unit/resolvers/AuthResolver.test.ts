@@ -14,6 +14,10 @@ describe('AuthResolver unit', () => {
     const mockJwt = {
       sign: jest.fn(),
     };
+    const mockNotificationPreferencesRepository = {
+      create: jest.fn(),
+      save: jest.fn(),
+    };
     const mockProfileRepository = {
       create: jest.fn(),
       save: jest.fn(),
@@ -44,6 +48,16 @@ describe('AuthResolver unit', () => {
     function MockJwtService(this: any, jwt: typeof mockJwt) {
       this.createTokens = jest.fn();
       this.jwt = jwt;
+    }
+
+    function MockNotificationPreferencesService(
+      this: any,
+      mockRepository: typeof mockNotificationPreferencesRepository
+    ) {
+      this.create = jest.fn().mockReturnValue({
+        id: 3,
+      });
+      this.notificationPreferencesRepository = mockRepository;
     }
 
     function MockMailService(this: any, transporter: typeof mockTransporter) {
@@ -88,6 +102,9 @@ describe('AuthResolver unit', () => {
       new (MockGeneralPreferencesService as any)(
         mockGeneralPreferencesRepository
       ),
+      new (MockNotificationPreferencesService as any)(
+        mockNotificationPreferencesRepository
+      ),
       new (MockJwtService as any)(mockJwt),
       new (MockMailService as any)(mockTransporter),
       new (MockProfileService as any)(mockProfileRepository),
@@ -106,7 +123,7 @@ describe('AuthResolver unit', () => {
     // @ts-ignore
     createToken.mockImplementationOnce(() => fakeToken);
 
-    it('should call  generalPreferencesService.create, mailService.sendVerificationEmail, profileService.create, userService.create, jwtService.createTokens, res.cookie and redisService.add', async () => {
+    it('should call generalPreferencesService.create, notificationPreferencesService.create, mailService.sendVerificationEmail, profileService.create, userService.create, jwtService.createTokens, res.cookie and redisService.add', async () => {
       const createUserData = {
         email: 'ben@ben.com',
         password: 'benben',
@@ -126,8 +143,9 @@ describe('AuthResolver unit', () => {
       const refreshToken = 'refreshToken';
       const expectedCreateUserParams = {
         ...createUserData,
-        profile: { id: 1 },
         generalPreferences: { id: 2 },
+        notificationPreferences: { id: 3 },
+        profile: { id: 1 },
       };
 
       authResolver.jwtService.createTokens = jest
@@ -151,6 +169,10 @@ describe('AuthResolver unit', () => {
 
       expect(
         authResolver.generalPreferencesService.create
+      ).toHaveBeenCalledTimes(1);
+
+      expect(
+        authResolver.notificationPreferencesService.create
       ).toHaveBeenCalledTimes(1);
 
       expect(authResolver.userService.create).toHaveBeenCalledTimes(1);

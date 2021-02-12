@@ -5,6 +5,7 @@ import { Arg, Ctx, Field, InputType, Mutation, Resolver } from 'type-graphql';
 import { IsUsernameUnique } from '../decorators';
 import {
   GeneralPreferencesService,
+  NotificationPreferencesService,
   JwtService,
   MailService,
   ProfileService,
@@ -50,6 +51,7 @@ class RegisterInput {
 @Service()
 class AuthResolver {
   public generalPreferencesService: GeneralPreferencesService;
+  public notificationPreferencesService: NotificationPreferencesService;
   public jwtService: JwtService;
   public mailService: MailService;
   public profileService: ProfileService;
@@ -58,6 +60,7 @@ class AuthResolver {
 
   constructor(
     generalPreferencesService: GeneralPreferencesService,
+    notificationPreferencesService: NotificationPreferencesService,
     jwtService: JwtService,
     mailService: MailService,
     profileService: ProfileService,
@@ -65,6 +68,7 @@ class AuthResolver {
     userService: UserService
   ) {
     this.generalPreferencesService = generalPreferencesService;
+    this.notificationPreferencesService = notificationPreferencesService;
     this.jwtService = jwtService;
     this.mailService = mailService;
     this.profileService = profileService;
@@ -89,11 +93,13 @@ class AuthResolver {
       const { email, username } = createUserData;
       const profile = await this.profileService.create();
       const generalPreferences = await this.generalPreferencesService.create();
+      const notificationPreferences = await this.notificationPreferencesService.create();
 
       await this.userService.create({
         ...createUserData,
-        profile,
         generalPreferences,
+        notificationPreferences,
+        profile,
       });
       await this.mailService.sendVerificationEmail(
         email,

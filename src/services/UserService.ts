@@ -1,11 +1,17 @@
 import { Inject, Service } from 'typedi';
 import { Repository } from 'typeorm';
 
-import { GeneralPreferences, Profile, User } from '../entities';
+import {
+  GeneralPreferences,
+  NotificationPreferences,
+  Profile,
+  User,
+} from '../entities';
 
 interface CreateUserDTO {
   email: string;
   generalPreferences: GeneralPreferences;
+  notificationPreferences: NotificationPreferences;
   profile: Profile;
   username: string;
   password: string;
@@ -43,7 +49,7 @@ class UserService {
    */
   async getAll(): Promise<User[] | undefined> {
     return this.userRepository.find({
-      relations: ['generalPreferences', 'profile'],
+      relations: ['generalPreferences', 'notificationPreferences', 'profile'],
     });
   }
 

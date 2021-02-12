@@ -14,7 +14,12 @@ import {
   createSchema,
   TestUtils,
 } from '../../../src/utils';
-import { GeneralPreferences, Profile, User } from '../../../src/entities';
+import {
+  GeneralPreferences,
+  NotificationPreferences,
+  Profile,
+  User,
+} from '../../../src/entities';
 
 dotenv.config();
 
@@ -40,6 +45,10 @@ describe('AuthResolver integration', () => {
     Container.set(
       'generalPreferencesRepository',
       getRepository(GeneralPreferences)
+    );
+    Container.set(
+      'notificationPreferencesRepository',
+      getRepository(NotificationPreferences)
     );
     Container.set('transporter', await createTransporter());
     Container.set('jwt', jwt);
