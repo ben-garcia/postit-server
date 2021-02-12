@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 import { Field, ObjectType, ID } from 'type-graphql';
 
-import { Profile } from '.';
+import { GeneralPreferences, Profile } from '.';
 
 @ObjectType()
 @Entity('users')
@@ -25,6 +25,11 @@ class User extends BaseEntity {
   @Column()
   @Field(() => String)
   email: string;
+
+  @Field(() => GeneralPreferences)
+  @OneToOne(() => GeneralPreferences)
+  @JoinColumn()
+  generalPreferences: GeneralPreferences;
 
   @Column({ length: 20, unique: true })
   @Field(() => String)

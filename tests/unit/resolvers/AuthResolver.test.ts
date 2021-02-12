@@ -7,6 +7,10 @@ describe('AuthResolver unit', () => {
   let authResolver: AuthResolver;
 
   beforeEach(() => {
+    const mockGeneralPreferencesRepository = {
+      create: jest.fn(),
+      save: jest.fn(),
+    };
     const mockJwt = {
       sign: jest.fn(),
     };
@@ -26,6 +30,16 @@ describe('AuthResolver unit', () => {
       del: jest.fn(),
       setex: jest.fn(),
     };
+
+    function MockGeneralPreferencesService(
+      this: any,
+      mockRepository: typeof mockGeneralPreferencesRepository
+    ) {
+      this.create = jest.fn().mockReturnValue({
+        id: 2,
+      });
+      this.generalPreferencesRepository = mockRepository;
+    }
 
     function MockJwtService(this: any, jwt: typeof mockJwt) {
       this.createTokens = jest.fn();
@@ -71,6 +85,9 @@ describe('AuthResolver unit', () => {
     }
 
     authResolver = new AuthResolver(
+      new (MockGeneralPreferencesService as any)(
+        mockGeneralPreferencesRepository
+      ),
       new (MockJwtService as any)(mockJwt),
       new (MockMailService as any)(mockTransporter),
       new (MockProfileService as any)(mockProfileRepository),
@@ -89,7 +106,7 @@ describe('AuthResolver unit', () => {
     // @ts-ignore
     createToken.mockImplementationOnce(() => fakeToken);
 
-    it('should call mailService.sendVerificationEmail, profileService.create, userService.create, jwtService.createTokens, res.cookie and redisService.add', async () => {
+    it('should call  generalPreferencesService.create, mailService.sendVerificationEmail, profileService.create, userService.create, jwtService.createTokens, res.cookie and redisService.add', async () => {
       const createUserData = {
         email: 'ben@ben.com',
         password: 'benben',
@@ -110,6 +127,7 @@ describe('AuthResolver unit', () => {
       const expectedCreateUserParams = {
         ...createUserData,
         profile: { id: 1 },
+        generalPreferences: { id: 2 },
       };
 
       authResolver.jwtService.createTokens = jest
@@ -130,6 +148,10 @@ describe('AuthResolver unit', () => {
       );
 
       expect(authResolver.profileService.create).toHaveBeenCalledTimes(1);
+
+      expect(
+        authResolver.generalPreferencesService.create
+      ).toHaveBeenCalledTimes(1);
 
       expect(authResolver.userService.create).toHaveBeenCalledTimes(1);
       expect(authResolver.userService.create).toHaveBeenCalledWith(

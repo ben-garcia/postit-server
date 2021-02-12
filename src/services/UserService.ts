@@ -1,10 +1,11 @@
 import { Inject, Service } from 'typedi';
 import { Repository } from 'typeorm';
 
-import { Profile, User } from '../entities';
+import { GeneralPreferences, Profile, User } from '../entities';
 
 interface CreateUserDTO {
   email: string;
+  generalPreferences: GeneralPreferences;
   profile: Profile;
   username: string;
   password: string;
@@ -41,7 +42,9 @@ class UserService {
    * Fetch all users.
    */
   async getAll(): Promise<User[] | undefined> {
-    return this.userRepository.find({ relations: ['profile'] });
+    return this.userRepository.find({
+      relations: ['generalPreferences', 'profile'],
+    });
   }
 
   /**

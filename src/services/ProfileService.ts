@@ -7,7 +7,7 @@ import { Profile } from '../entities';
  * This service interacts with the 'profile' table
  */
 @Service()
-class UserService {
+class ProfileService {
   private profileRepository: Repository<Profile>;
 
   /**
@@ -33,4 +33,4 @@ class UserService {
   }
 }
 
-export default UserService;
+export default ProfileService;

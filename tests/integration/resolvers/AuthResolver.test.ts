@@ -14,7 +14,7 @@ import {
   createSchema,
   TestUtils,
 } from '../../../src/utils';
-import { Profile, User } from '../../../src/entities';
+import { GeneralPreferences, Profile, User } from '../../../src/entities';
 
 dotenv.config();
 
@@ -37,6 +37,10 @@ describe('AuthResolver integration', () => {
 
     Container.set('userRepository', getRepository(User));
     Container.set('profileRepository', getRepository(Profile));
+    Container.set(
+      'generalPreferencesRepository',
+      getRepository(GeneralPreferences)
+    );
     Container.set('transporter', await createTransporter());
     Container.set('jwt', jwt);
     Container.set('redisClient', createRedisClient());
