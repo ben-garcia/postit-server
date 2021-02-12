@@ -18,6 +18,10 @@ describe('AuthResolver unit', () => {
       create: jest.fn(),
       save: jest.fn(),
     };
+    const mockEmailNotificationPreferencesRepository = {
+      create: jest.fn(),
+      save: jest.fn(),
+    };
     const mockProfileRepository = {
       create: jest.fn(),
       save: jest.fn(),
@@ -58,6 +62,16 @@ describe('AuthResolver unit', () => {
         id: 3,
       });
       this.notificationPreferencesRepository = mockRepository;
+    }
+
+    function MockEmailNotificationPreferencesService(
+      this: any,
+      mockRepository: typeof mockEmailNotificationPreferencesRepository
+    ) {
+      this.create = jest.fn().mockReturnValue({
+        id: 4,
+      });
+      this.emailNotificationPreferencesRepository = mockRepository;
     }
 
     function MockMailService(this: any, transporter: typeof mockTransporter) {
@@ -105,6 +119,9 @@ describe('AuthResolver unit', () => {
       new (MockNotificationPreferencesService as any)(
         mockNotificationPreferencesRepository
       ),
+      new (MockEmailNotificationPreferencesService as any)(
+        mockEmailNotificationPreferencesRepository
+      ),
       new (MockJwtService as any)(mockJwt),
       new (MockMailService as any)(mockTransporter),
       new (MockProfileService as any)(mockProfileRepository),
@@ -123,7 +140,7 @@ describe('AuthResolver unit', () => {
     // @ts-ignore
     createToken.mockImplementationOnce(() => fakeToken);
 
-    it('should call generalPreferencesService.create, notificationPreferencesService.create, mailService.sendVerificationEmail, profileService.create, userService.create, jwtService.createTokens, res.cookie and redisService.add', async () => {
+    it('should call generalPreferencesService.create, notificationPreferencesService.create, emailNotificationPreferencesService.create mailService.sendVerificationEmail, profileService.create, userService.create, jwtService.createTokens, res.cookie and redisService.add', async () => {
       const createUserData = {
         email: 'ben@ben.com',
         password: 'benben',
@@ -143,6 +160,7 @@ describe('AuthResolver unit', () => {
       const refreshToken = 'refreshToken';
       const expectedCreateUserParams = {
         ...createUserData,
+        emailNotificationPreferences: { id: 4 },
         generalPreferences: { id: 2 },
         notificationPreferences: { id: 3 },
         profile: { id: 1 },
@@ -173,6 +191,10 @@ describe('AuthResolver unit', () => {
 
       expect(
         authResolver.notificationPreferencesService.create
+      ).toHaveBeenCalledTimes(1);
+
+      expect(
+        authResolver.emailNotificationPreferencesService.create
       ).toHaveBeenCalledTimes(1);
 
       expect(authResolver.userService.create).toHaveBeenCalledTimes(1);

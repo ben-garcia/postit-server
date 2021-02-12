@@ -13,7 +13,12 @@ import {
 } from 'typeorm';
 import { Field, ObjectType, ID } from 'type-graphql';
 
-import { GeneralPreferences, NotificationPreferences, Profile } from '.';
+import {
+  GeneralPreferences,
+  NotificationPreferences,
+  EmailNotificationPreferences,
+  Profile,
+} from '.';
 
 @ObjectType()
 @Entity('users')
@@ -25,6 +30,11 @@ class User extends BaseEntity {
   @Column()
   @Field(() => String)
   email: string;
+
+  @Field(() => EmailNotificationPreferences, { nullable: true })
+  @OneToOne(() => EmailNotificationPreferences)
+  @JoinColumn()
+  emailNotificationPreferences: EmailNotificationPreferences;
 
   @Field(() => GeneralPreferences, { nullable: true })
   @OneToOne(() => GeneralPreferences)

@@ -10,6 +10,7 @@ import { createConnection, getRepository } from 'typeorm';
 import {
   GeneralPreferences,
   NotificationPreferences,
+  EmailNotificationPreferences,
   Profile,
   User,
 } from './entities';
@@ -36,6 +37,10 @@ dotenv.config();
   Container.set(
     'notificationPreferencesRepository',
     getRepository(NotificationPreferences)
+  );
+  Container.set(
+    'emailNotificationPreferencesRepository',
+    getRepository(EmailNotificationPreferences)
   );
   Container.set('transporter', await createTransporter());
   Container.set('jwt', jwt);

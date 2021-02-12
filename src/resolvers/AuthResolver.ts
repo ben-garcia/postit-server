@@ -6,6 +6,7 @@ import { IsUsernameUnique } from '../decorators';
 import {
   GeneralPreferencesService,
   NotificationPreferencesService,
+  EmailNotificationPreferencesService,
   JwtService,
   MailService,
   ProfileService,
@@ -52,6 +53,7 @@ class RegisterInput {
 class AuthResolver {
   public generalPreferencesService: GeneralPreferencesService;
   public notificationPreferencesService: NotificationPreferencesService;
+  public emailNotificationPreferencesService: EmailNotificationPreferencesService;
   public jwtService: JwtService;
   public mailService: MailService;
   public profileService: ProfileService;
@@ -61,6 +63,7 @@ class AuthResolver {
   constructor(
     generalPreferencesService: GeneralPreferencesService,
     notificationPreferencesService: NotificationPreferencesService,
+    emailNotificationPreferencesService: EmailNotificationPreferencesService,
     jwtService: JwtService,
     mailService: MailService,
     profileService: ProfileService,
@@ -69,6 +72,7 @@ class AuthResolver {
   ) {
     this.generalPreferencesService = generalPreferencesService;
     this.notificationPreferencesService = notificationPreferencesService;
+    this.emailNotificationPreferencesService = emailNotificationPreferencesService;
     this.jwtService = jwtService;
     this.mailService = mailService;
     this.profileService = profileService;
@@ -94,9 +98,11 @@ class AuthResolver {
       const profile = await this.profileService.create();
       const generalPreferences = await this.generalPreferencesService.create();
       const notificationPreferences = await this.notificationPreferencesService.create();
+      const emailNotificationPreferences = await this.emailNotificationPreferencesService.create();
 
       await this.userService.create({
         ...createUserData,
+        emailNotificationPreferences,
         generalPreferences,
         notificationPreferences,
         profile,

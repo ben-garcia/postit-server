@@ -4,12 +4,14 @@ import { Repository } from 'typeorm';
 import {
   GeneralPreferences,
   NotificationPreferences,
+  EmailNotificationPreferences,
   Profile,
   User,
 } from '../entities';
 
 interface CreateUserDTO {
   email: string;
+  emailNotificationPreferences: EmailNotificationPreferences;
   generalPreferences: GeneralPreferences;
   notificationPreferences: NotificationPreferences;
   profile: Profile;
@@ -49,7 +51,12 @@ class UserService {
    */
   async getAll(): Promise<User[] | undefined> {
     return this.userRepository.find({
-      relations: ['generalPreferences', 'notificationPreferences', 'profile'],
+      relations: [
+        'emailNotificationPreferences',
+        'generalPreferences',
+        'notificationPreferences',
+        'profile',
+      ],
     });
   }
 
