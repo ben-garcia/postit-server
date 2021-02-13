@@ -3,6 +3,7 @@ import { ApolloServer } from 'apollo-server-express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import express from 'express';
+import helmet from 'helmet';
 import jwt from 'jsonwebtoken';
 import { Container } from 'typedi';
 import { createConnection, getRepository } from 'typeorm';
@@ -51,6 +52,7 @@ dotenv.config();
   const cookieSecret = process.env.COOKIE_SECRET || 'cookiesecret';
 
   app.use(cookieParser(cookieSecret));
+  app.use(helmet());
   // builds the GraphQL schema using the resolver classes.
   const schema = await createSchema();
   const server = new ApolloServer({

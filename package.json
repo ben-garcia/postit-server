@@ -47,6 +47,7 @@
     "express": "^4.17.1",
     "express-handlebars": "^5.2.0",
     "graphql": "^15.5.0",
+    "helmet": "^4.4.1",
     "ioredis": "^4.19.4",
     "jsonwebtoken": "^8.5.1",
     "nodemailer": "^6.4.17",
