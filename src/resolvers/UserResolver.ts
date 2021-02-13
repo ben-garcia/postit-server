@@ -44,7 +44,7 @@ class UserResolver {
       return users;
     } catch (e) {
       // eslint-disable-next-line
-			console.log('AuthResolver.getAllUsers error: ', e);
+			console.log('UserResolver.getAllUsers error: ', e);
 
       return undefined;
     }

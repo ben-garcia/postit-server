@@ -1,23 +1,25 @@
 import { ApolloServer } from 'apollo-server-express';
 import { createTestClient } from 'apollo-server-testing';
 import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken';
 import { Container } from 'typedi';
 import { getRepository } from 'typeorm';
 
 import {
-  createEmailTemplate,
-  createRedisClient,
+  EmailNotificationPreferences,
+  GeneralPreferences,
+  NotificationPreferences,
+  Profile,
+  User,
+} from '../../../src/entities';
+import {
   createTestConnection,
-  createTransporter,
   createSchema,
   TestUtils,
 } from '../../../src/utils';
-import { User } from '../../../src/entities';
 
 dotenv.config();
 
-describe('AuthResolver integration', () => {
+describe('UserResolver integration', () => {
   let query: any;
   let testUtils: TestUtils;
   const fakeUser = {
@@ -30,10 +32,19 @@ describe('AuthResolver integration', () => {
     testUtils = new TestUtils(await createTestConnection());
 
     Container.set('userRepository', getRepository(User));
-    Container.set('transporter', await createTransporter());
-    Container.set('jwt', jwt);
-    Container.set('redisClient', createRedisClient());
-    Container.set('emailTemplate', createEmailTemplate());
+    Container.set(
+      'emailNotificationPreferencesRepository',
+      getRepository(EmailNotificationPreferences)
+    );
+    Container.set(
+      'notificationPreferencesRepository',
+      getRepository(NotificationPreferences)
+    );
+    Container.set(
+      'generalPreferencesRepository',
+      getRepository(GeneralPreferences)
+    );
+    Container.set('profileRepository', getRepository(Profile));
 
     const schema = await createSchema();
     const server = new ApolloServer({

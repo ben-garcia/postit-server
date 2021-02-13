@@ -4,12 +4,8 @@ import { Arg, Ctx, Field, InputType, Mutation, Resolver } from 'type-graphql';
 
 import { IsUsernameUnique } from '../decorators';
 import {
-  GeneralPreferencesService,
-  NotificationPreferencesService,
-  EmailNotificationPreferencesService,
   JwtService,
   MailService,
-  ProfileService,
   RedisService,
   UserService,
 } from '../services';
@@ -51,31 +47,19 @@ class RegisterInput {
 @Resolver()
 @Service()
 class AuthResolver {
-  public generalPreferencesService: GeneralPreferencesService;
-  public notificationPreferencesService: NotificationPreferencesService;
-  public emailNotificationPreferencesService: EmailNotificationPreferencesService;
   public jwtService: JwtService;
   public mailService: MailService;
-  public profileService: ProfileService;
   public redisService: RedisService;
   public userService: UserService;
 
   constructor(
-    generalPreferencesService: GeneralPreferencesService,
-    notificationPreferencesService: NotificationPreferencesService,
-    emailNotificationPreferencesService: EmailNotificationPreferencesService,
     jwtService: JwtService,
     mailService: MailService,
-    profileService: ProfileService,
     redisService: RedisService,
     userService: UserService
   ) {
-    this.generalPreferencesService = generalPreferencesService;
-    this.notificationPreferencesService = notificationPreferencesService;
-    this.emailNotificationPreferencesService = emailNotificationPreferencesService;
     this.jwtService = jwtService;
     this.mailService = mailService;
-    this.profileService = profileService;
     this.redisService = redisService;
     this.userService = userService;
   }
@@ -95,18 +79,8 @@ class AuthResolver {
         signed: true,
       };
       const { email, username } = createUserData;
-      const profile = await this.profileService.create();
-      const generalPreferences = await this.generalPreferencesService.create();
-      const notificationPreferences = await this.notificationPreferencesService.create();
-      const emailNotificationPreferences = await this.emailNotificationPreferencesService.create();
 
-      await this.userService.create({
-        ...createUserData,
-        emailNotificationPreferences,
-        generalPreferences,
-        notificationPreferences,
-        profile,
-      });
+      await this.userService.create(createUserData);
       await this.mailService.sendVerificationEmail(
         email,
         username,

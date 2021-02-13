@@ -8,13 +8,15 @@ import {
   Profile,
   User,
 } from '../entities';
+import {
+  EmailNotificationPreferencesService,
+  GeneralPreferencesService,
+  NotificationPreferencesService,
+  ProfileService,
+} from '.';
 
 interface CreateUserDTO {
   email: string;
-  emailNotificationPreferences: EmailNotificationPreferences;
-  generalPreferences: GeneralPreferences;
-  notificationPreferences: NotificationPreferences;
-  profile: Profile;
   username: string;
   password: string;
 }
@@ -24,7 +26,11 @@ interface CreateUserDTO {
  */
 @Service()
 class UserService {
-  private userRepository: Repository<User>;
+  public emailNotificationPreferencesService: EmailNotificationPreferencesService;
+  public generalPreferencesService: GeneralPreferencesService;
+  public notificationPreferencesService: NotificationPreferencesService;
+  public profileService: ProfileService;
+  public userRepository: Repository<User>;
 
   /**
    * Contructor injection via typedi's Inject decorator.
@@ -32,15 +38,38 @@ class UserService {
    * userRepository is the name of the service, used later,
    * when setting it's value in the index file.
    */
-  constructor(@Inject('userRepository') userRepository: Repository<User>) {
+  constructor(
+    emailNotificationPreferencesService: EmailNotificationPreferencesService,
+    generalPreferencesService: GeneralPreferencesService,
+    notificationPreferencesService: NotificationPreferencesService,
+    profileService: ProfileService,
+    @Inject('userRepository') userRepository: Repository<User>
+  ) {
+    this.emailNotificationPreferencesService = emailNotificationPreferencesService;
+    this.generalPreferencesService = generalPreferencesService;
+    this.notificationPreferencesService = notificationPreferencesService;
+    this.profileService = profileService;
     this.userRepository = userRepository;
   }
 
   /**
-   * Create a user and save it the the database.
+   * Create a user(along with a corresponding generalPreferences,
+   * notificationPreferences, emailNotificationPreferences, profile)
+   * and save it the the database.
    */
   async create(user: CreateUserDTO): Promise<User> {
-    const newUser = this.userRepository.create(user);
+    const profile = await this.profileService.create();
+    const generalPreferences = await this.generalPreferencesService.create();
+    const notificationPreferences = await this.notificationPreferencesService.create();
+    const emailNotificationPreferences = await this.emailNotificationPreferencesService.create();
+    const newUser = this.userRepository.create({
+      ...user,
+      emailNotificationPreferences,
+      generalPreferences,
+      notificationPreferences,
+      profile,
+    });
+
     await this.userRepository.save(newUser);
 
     return newUser;
