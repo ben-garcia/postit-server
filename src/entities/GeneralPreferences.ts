@@ -1,11 +1,4 @@
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Field, ID, ObjectType, registerEnumType } from 'type-graphql';
 
 import {
@@ -96,14 +89,6 @@ class GeneralPreferences extends BaseEntity {
   @Column({ default: false })
   @Field(() => Boolean)
   viewNsfw: boolean;
-
-  @CreateDateColumn()
-  @Field(() => String)
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  @Field(() => String)
-  updatedAt: Date;
 }
 
 export default GeneralPreferences;

@@ -52,7 +52,13 @@ dotenv.config();
   const cookieSecret = process.env.COOKIE_SECRET || 'cookiesecret';
 
   app.use(cookieParser(cookieSecret));
-  app.use(helmet());
+  app.use(
+    helmet({
+      // play nice with graphql playground
+      contentSecurityPolicy:
+        process.env.NODE_ENV === 'production' ? undefined : false,
+    })
+  );
   // builds the GraphQL schema using the resolver classes.
   const schema = await createSchema();
   const server = new ApolloServer({

@@ -1,10 +1,15 @@
 import { Inject, Service } from 'typedi';
 import { Repository } from 'typeorm';
 
+/* eslint no-unused-vars: 0 */
 import {
+  // @ts-ignore
   GeneralPreferences,
+  // @ts-ignore
   NotificationPreferences,
+  // @ts-ignore
   EmailNotificationPreferences,
+  // @ts-ignore
   Profile,
   User,
 } from '../entities';

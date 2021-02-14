@@ -1,11 +1,4 @@
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Field, ID, Int, ObjectType } from 'type-graphql';
 
 @ObjectType()
@@ -102,14 +95,6 @@ class Profile extends BaseEntity {
   @Column({ default: false })
   @Field(() => Boolean)
   showNsfw: boolean;
-
-  @CreateDateColumn()
-  @Field(() => String)
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  @Field(() => String)
-  updatedAt: Date;
 }
 
 export default Profile;
