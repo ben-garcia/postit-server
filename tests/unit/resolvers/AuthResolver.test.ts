@@ -67,7 +67,7 @@ describe('AuthResolver unit', () => {
     expect(authResolver).toBeDefined();
   });
 
-  describe('register mutation', () => {
+  describe('signUp mutation', () => {
     const fakeToken = 'thisisthefaketoken';
 
     // @ts-ignore
@@ -99,7 +99,7 @@ describe('AuthResolver unit', () => {
         .fn()
         .mockReturnValue([accessToken, refreshToken]);
 
-      await authResolver.register(createUserData, mockContext);
+      await authResolver.signUp(createUserData, mockContext);
 
       expect(
         authResolver.mailService.sendVerificationEmail

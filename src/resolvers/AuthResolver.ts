@@ -15,7 +15,7 @@ import { createToken } from '../utils';
 /**
  * This class represents the properties needed to create a User.
  *
- * Instead of passing 3 arguments to the register mutation, this class
+ * Instead of passing 3 arguments to the signUp mutation, this class
  * is used to define the object with those same arguments.
  *
  * Contraints
@@ -24,7 +24,7 @@ import { createToken } from '../utils';
  * password must contain at least 6 characters
  */
 @InputType()
-class RegisterInput {
+class SignUpInput {
   @Field()
   @IsEmail()
   email: string;
@@ -68,8 +68,8 @@ class AuthResolver {
    * Mutation the create a user in the database.
    */
   @Mutation(() => Boolean)
-  async register(
-    @Arg('createUserData', () => RegisterInput) createUserData: RegisterInput,
+  async signUp(
+    @Arg('createUserData', () => SignUpInput) createUserData: SignUpInput,
     @Ctx() { res }: MyContext
   ): Promise<boolean> {
     try {
@@ -113,7 +113,7 @@ class AuthResolver {
       return true;
     } catch (e) {
       // eslint-disable-next-line
-			console.log('register mutation error: ', e);
+			console.log('signUp mutation error: ', e);
 
       return false;
     }

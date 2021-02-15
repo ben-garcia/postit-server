@@ -27,9 +27,9 @@ dotenv.config();
 describe('AuthResolver integration', () => {
   let mutate: any;
   let testUtils: TestUtils;
-  const registerMutation = `
-	mutation Register($createUserData: RegisterInput!) {
-		register(createUserData: $createUserData)
+  const signUpMutation = `
+	mutation Register($createUserData: SignUpInput!) {
+		signUp(createUserData: $createUserData)
 	}
 `;
   const fakeUser = {
@@ -81,7 +81,7 @@ describe('AuthResolver integration', () => {
   });
 
   describe('Mutations', () => {
-    describe('register', () => {
+    describe('signUp', () => {
       it('should succesfully create a user', async () => {
         // Mock the implementation of the MailService.sendVerificationEmail
         // There is no need to send test email to ethereal during testing.
@@ -107,9 +107,9 @@ describe('AuthResolver integration', () => {
           setex: jest.fn(),
         }));
 
-        const expected = { register: true };
+        const expected = { signUp: true };
         const response = await mutate({
-          mutation: registerMutation,
+          mutation: signUpMutation,
           variables: {
             createUserData: fakeUser,
           },
@@ -122,7 +122,7 @@ describe('AuthResolver integration', () => {
         it('should fail when email isnt an email format', async () => {
           const expected = 'email must be an email';
           const response = await mutate({
-            mutation: registerMutation,
+            mutation: signUpMutation,
             variables: {
               createUserData: {
                 ...fakeUser,
@@ -149,7 +149,7 @@ describe('AuthResolver integration', () => {
 
           const expected = 'That username is already taken';
           const response = await mutate({
-            mutation: registerMutation,
+            mutation: signUpMutation,
             variables: {
               createUserData: {
                 ...fakeUser,
@@ -167,7 +167,7 @@ describe('AuthResolver integration', () => {
         it('should fail when username is less than 3 characters', async () => {
           const expected = 'Username must be between 3 and 20 characters';
           const response = await mutate({
-            mutation: registerMutation,
+            mutation: signUpMutation,
             variables: {
               createUserData: {
                 ...fakeUser,
@@ -186,7 +186,7 @@ describe('AuthResolver integration', () => {
         it('should fail when username is greater than 20 characters', async () => {
           const expected = 'Username must be between 3 and 20 characters';
           const response = await mutate({
-            mutation: registerMutation,
+            mutation: signUpMutation,
             variables: {
               createUserData: {
                 ...fakeUser,
@@ -206,7 +206,7 @@ describe('AuthResolver integration', () => {
       it('should fail when password is less than 6 characters', async () => {
         const expected = 'Password must be at least 6 characters long';
         const response = await mutate({
-          mutation: registerMutation,
+          mutation: signUpMutation,
           variables: {
             createUserData: {
               email: 'ben2@ben.com',
