@@ -1,10 +1,9 @@
 {
+  "author": "Ben Garcia",
   "name": "postit-server",
   "description": "The server code for Postit",
-  "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:ben-garcia/postit-server.git",
-  "author": "Ben Garcia",
   "license": "MIT",
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
@@ -28,9 +27,9 @@
     "eslint-config-prettier": "^7.2.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.3.1",
-    "husky": "^4.3.8",
+    "husky": "^5.0.9",
     "jest": "^26.6.3",
-    "lint-staged": "^10.5.3",
+    "lint-staged": "^10.5.4",
     "nodemon": "^2.0.7",
     "prettier": "^2.2.1",
     "ts-jest": "^26.4.4",
@@ -59,15 +58,17 @@
     "uuid": "^8.3.2"
   },
   "scripts": {
-    "start": "nodemon --exec ts-node src/index.ts",
-    "format": "prettier --write \"./**/*.{ts,json,md}\"",
-    "lint": "eslint src/**/*.ts",
-    "test": "jest --watch --detectOpenHandles",
-    "test:coverage": "jest --collectCoverage",
     "db:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate",
     "db:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "db:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert",
-    "db:show": "ts-node ./node_modules/typeorm/cli.js migration:show"
+    "db:show": "ts-node ./node_modules/typeorm/cli.js migration:show",
+    "format": "prettier --write 'src/**/*.{ts,json,md}'",
+    "start": "nodemon --exec ts-node src/index.ts",
+    "lint": "eslint . --ext js,ts --fix",
+		"test": "jest",
+    "test:watch": "jest --watch --detectOpenHandles",
+    "test:coverage": "jest --collectCoverage",
+		"type-check": "tsc --project tsconfig.json --pretty --noEmit"
   },
   "keywords": [
     "apollo-server",
@@ -76,22 +77,5 @@
     "typescript",
     "typeorm"
   ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "**/*.{ts}": [
-      "eslint --fix",
-      "prettier --write",
-      "git add"
-    ],
-    "tests/**/*.test.ts": [
-      "jest --detectOpenHandles --forceExit"
-    ],
-    "**/*.{json,md}": [
-      "prettier --write"
-    ]
-  }
+  "version": "1.0.0"
 }
