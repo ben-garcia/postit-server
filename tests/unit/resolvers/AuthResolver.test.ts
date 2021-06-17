@@ -1,7 +1,7 @@
 import { AuthResolver } from '../../../src/resolvers';
-import { createToken } from '../../../src/utils/createToken';
+import { createToken } from '../../../src/utils/create-token';
 
-jest.mock('../../../src/utils/createToken');
+jest.mock('../../../src/utils/create-token');
 
 describe('AuthResolver unit', () => {
   let authResolver: AuthResolver;
