@@ -150,5 +150,74 @@ describe('AuthResolver unit', () => {
         refreshToken
       );
     });
+
+    it('should not call mailService.sendVerificationEmail when omitting email', async () => {
+      const createUserData = {
+        password: 'benben',
+        username: 'benben',
+      };
+      const expectedCookieOptions = {
+        httpOnly: true,
+        secure: false,
+        signed: true,
+      };
+      const mockContext: any = {
+        res: {
+          cookie: jest.fn(),
+        },
+      };
+      const accessToken = 'accessToken';
+      const refreshToken = 'refreshToken';
+      const expectedCreateUserParams = {
+        ...createUserData,
+      };
+
+      authResolver.jwtService.createTokens = jest
+        .fn()
+        .mockReturnValue([accessToken, refreshToken]);
+
+      await authResolver.signUp(createUserData, mockContext);
+
+      expect(
+        authResolver.mailService.sendVerificationEmail
+      ).toHaveBeenCalledTimes(0);
+
+      expect(authResolver.userService.create).toHaveBeenCalledTimes(1);
+      expect(authResolver.userService.create).toHaveBeenCalledWith(
+        expectedCreateUserParams
+      );
+
+      expect(authResolver.jwtService.createTokens).toHaveBeenCalledTimes(1);
+      expect(authResolver.jwtService.createTokens).toHaveBeenCalledWith({
+        username: createUserData.username,
+      });
+
+      expect(mockContext.res.cookie).toHaveBeenCalledTimes(2);
+      expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
+        1,
+        'session-access-token',
+        accessToken,
+        {
+          ...expectedCookieOptions,
+          maxAge: 60 * 60 * 15,
+        }
+      );
+      expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
+        2,
+        'session-refresh-token',
+        refreshToken,
+        {
+          ...expectedCookieOptions,
+          maxAge: 60 * 60 * 24 * 365,
+        }
+      );
+
+      expect(authResolver.redisService.add).toHaveBeenCalledTimes(1);
+      expect(authResolver.redisService.add).toHaveBeenCalledWith(
+        `${createUserData.username}:refreshToken`,
+        60 * 60 * 24 * 365, // 1 year
+        refreshToken
+      );
+    });
   });
 });
