@@ -6,6 +6,8 @@
   "repository": "git@github.com:ben-garcia/postit-server.git",
   "license": "MIT",
   "devDependencies": {
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
     "@types/bcrypt": "^3.0.0",
     "@types/cookie-parser": "^1.4.2",
     "@types/dotenv": "^8.2.0",
@@ -65,10 +67,10 @@
     "format": "prettier --write 'src/**/*.{ts,json,md}'",
     "start": "nodemon --exec ts-node src/index.ts",
     "lint": "eslint . --ext js,ts --fix",
-		"test": "jest --runInBand",
+    "test": "jest --runInBand",
     "test:watch": "jest --watch  --runInBand --detectOpenHandles",
     "test:coverage": "jest --runInBand  --collectCoverage",
-		"type-check": "tsc --project tsconfig.json --pretty --noEmit"
+    "type-check": "tsc --project tsconfig.json --pretty --noEmit"
   },
   "keywords": [
     "apollo-server",
