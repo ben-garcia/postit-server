@@ -25,9 +25,9 @@ import { createToken } from '../utils';
  */
 @InputType()
 class SignUpInput {
-  @Field()
+  @Field({ nullable: true })
   @IsEmail()
-  email: string;
+  email?: string;
 
   @Field()
   @MinLength(3, { message: 'Username must be between 3 and 20 characters' })
@@ -36,7 +36,7 @@ class SignUpInput {
   username: string;
 
   @Field()
-  @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password: string;
 }
 
@@ -81,15 +81,20 @@ class AuthResolver {
       const { email, username } = createUserData;
 
       await this.userService.create(createUserData);
-      await this.mailService.sendVerificationEmail(
-        email,
-        username,
-        createToken()
-      );
+
+      // only send an email verification is the user
+      // provides an email address.
+      if (email) {
+        await this.mailService.sendVerificationEmail(
+          email,
+          username,
+          createToken()
+        );
+      }
 
       // get token to send to the client via cookies.
       const [accessToken, refreshToken] = this.jwtService.createTokens({
-        email,
+        email: email ?? undefined,
         username,
       });
 

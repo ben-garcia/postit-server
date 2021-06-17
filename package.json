@@ -65,9 +65,9 @@
     "format": "prettier --write 'src/**/*.{ts,json,md}'",
     "start": "nodemon --exec ts-node src/index.ts",
     "lint": "eslint . --ext js,ts --fix",
-		"test": "jest",
-    "test:watch": "jest --watch --detectOpenHandles",
-    "test:coverage": "jest --collectCoverage",
+		"test": "jest --runInBand",
+    "test:watch": "jest --watch  --runInBand --detectOpenHandles",
+    "test:coverage": "jest --runInBand  --collectCoverage",
 		"type-check": "tsc --project tsconfig.json --pretty --noEmit"
   },
   "keywords": [
