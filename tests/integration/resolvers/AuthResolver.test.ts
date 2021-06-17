@@ -35,7 +35,7 @@ describe('AuthResolver integration', () => {
   const fakeUser = {
     email: 'ben@ben.com',
     username: 'benben',
-    password: 'benben',
+    password: 'benbenben',
   };
 
   beforeAll(async () => {
@@ -112,6 +112,28 @@ describe('AuthResolver integration', () => {
           mutation: signUpMutation,
           variables: {
             createUserData: fakeUser,
+          },
+        });
+
+        expect(response.data).toEqual(expected);
+      });
+
+      it('should succesfully create a user without an email', async () => {
+        // Mock the implementation of the MailService.sendVerificationEmail
+        // There is no need to send test email to ethereal during testing.
+        // @ts-ignore
+        jest.spyOn(RedisService.prototype, 'add').mockImplementation(() => ({
+          setex: jest.fn(),
+        }));
+
+        const expected = { signUp: true };
+        const response = await mutate({
+          mutation: signUpMutation,
+          variables: {
+            createUserData: {
+              username: fakeUser.username,
+              password: fakeUser.password,
+            },
           },
         });
 
@@ -203,8 +225,8 @@ describe('AuthResolver integration', () => {
         });
       });
 
-      it('should fail when password is less than 6 characters', async () => {
-        const expected = 'Password must be at least 6 characters long';
+      it('should fail when password is less than 8 characters', async () => {
+        const expected = 'Password must be at least 8 characters long';
         const response = await mutate({
           mutation: signUpMutation,
           variables: {
