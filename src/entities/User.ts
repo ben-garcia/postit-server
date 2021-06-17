@@ -27,9 +27,9 @@ class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  @Field(() => String)
-  email: string;
+  @Column({ nullable: true })
+  @Field(() => String, { nullable: true })
+  email?: string;
 
   @Field(() => EmailNotificationPreferences, { nullable: true })
   @OneToOne(() => EmailNotificationPreferences)
