@@ -2,7 +2,7 @@ import * as JWT from 'jsonwebtoken';
 import { Inject, Service } from 'typedi';
 
 interface Payload {
-  email: string;
+  email?: string;
   username: string;
 }
 

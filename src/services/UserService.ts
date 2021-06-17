@@ -21,7 +21,7 @@ import {
 } from '.';
 
 interface CreateUserDTO {
-  email: string;
+  email?: string;
   username: string;
   password: string;
 }
