@@ -2,7 +2,6 @@ import { MinLength, MaxLength } from 'class-validator';
 import { Service } from 'typedi';
 import { Args, ArgsType, Field, Query, Resolver } from 'type-graphql';
 
-import { IsUsernameUnique } from '../decorators';
 import { User } from '../entities';
 import { UserService } from '../services';
 
@@ -19,7 +18,6 @@ class UsernameArg {
   @Field()
   @MinLength(3, { message: 'Username must be between 3 and 20 characters' })
   @MaxLength(20, { message: 'Username must be between 3 and 20 characters' })
-  @IsUsernameUnique({ message: 'That username is already taken' })
   username: string;
 }
 
