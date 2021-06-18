@@ -22,11 +22,6 @@ dotenv.config();
 describe('UserResolver integration', () => {
   let query: any;
   let testUtils: TestUtils;
-  const fakeUser = {
-    email: 'ben@ben.com',
-    username: 'benben',
-    password: 'benben',
-  };
 
   beforeAll(async () => {
     testUtils = new TestUtils(await createTestConnection());
@@ -83,26 +78,6 @@ describe('UserResolver integration', () => {
         });
 
         expect(response.data).toEqual(expected);
-      });
-
-      it('should fail when username exists in the db', async () => {
-        await testUtils
-          .getConnection()
-          .getRepository(User)
-          .create(fakeUser)
-          .save();
-
-        const expected = 'That username is already taken';
-        const response = await query({
-          query: isUsernameUnique,
-          variables: {
-            username: fakeUser.username,
-          },
-        });
-        const errors = response.errors[0].extensions.exception.validationErrors;
-
-        expect(errors.length).toBe(1);
-        expect(errors[0].constraints.isUsernameUnique).toEqual(expected);
       });
 
       it('should fail when username less than 3 characters', async () => {
