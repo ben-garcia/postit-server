@@ -20,6 +20,7 @@ import {
   createRedisClient,
   createTransporter,
   createSchema,
+  formatResponse,
 } from './utils';
 
 dotenv.config();
@@ -59,10 +60,13 @@ dotenv.config();
         process.env.NODE_ENV === 'production' ? undefined : false,
     })
   );
+
   // builds the GraphQL schema using the resolver classes.
   const schema = await createSchema();
   const server = new ApolloServer({
     context: ({ req, res }) => ({ req, res }),
+    // @ts-ignore
+    formatResponse,
     schema,
   });
 
