@@ -12,6 +12,7 @@ import {
   createTestConnection,
   createTransporter,
   createSchema,
+  formatResponse,
   TestUtils,
 } from '../../../src/utils';
 import {
@@ -62,8 +63,10 @@ describe('AuthResolver integration', () => {
 
     const schema = await createSchema();
     const server = new ApolloServer({
-      schema,
       context: () => ({ res: { cookie: jest.fn() } }),
+      // @ts-ignore
+      formatResponse,
+      schema,
     });
 
     const testServer = createTestClient(server);
@@ -141,8 +144,15 @@ describe('AuthResolver integration', () => {
       });
 
       describe('email', () => {
-        it('should fail when email isnt an email format', async () => {
-          const expected = 'email must be an email';
+        it('should fail when email isnt formated correctly', async () => {
+          const expected = [
+            {
+              field: 'email',
+              constraints: {
+                isEmail: 'email must be an email',
+              },
+            },
+          ];
           const response = await mutate({
             mutation: signUpMutation,
             variables: {
@@ -153,11 +163,8 @@ describe('AuthResolver integration', () => {
               },
             },
           });
-          const errors =
-            response.errors[0].extensions.exception.validationErrors;
 
-          expect(errors.length).toBe(1);
-          expect(errors[0].constraints.isEmail).toEqual(expected);
+          expect(response.errors).toEqual(expected);
         });
       });
 
@@ -169,7 +176,14 @@ describe('AuthResolver integration', () => {
             .create(fakeUser)
             .save();
 
-          const expected = 'That username is already taken';
+          const expected = [
+            {
+              field: 'username',
+              constraints: {
+                isUsernameUnique: 'That username is already taken',
+              },
+            },
+          ];
           const response = await mutate({
             mutation: signUpMutation,
             variables: {
@@ -179,15 +193,19 @@ describe('AuthResolver integration', () => {
               },
             },
           });
-          const errors =
-            response.errors[0].extensions.exception.validationErrors;
 
-          expect(errors.length).toBe(1);
-          expect(errors[0].constraints.isUsernameUnique).toEqual(expected);
+          expect(response.errors).toEqual(expected);
         });
 
         it('should fail when username is less than 3 characters', async () => {
-          const expected = 'Username must be between 3 and 20 characters';
+          const expected = [
+            {
+              field: 'username',
+              constraints: {
+                minLength: 'Username must be between 3 and 20 characters',
+              },
+            },
+          ];
           const response = await mutate({
             mutation: signUpMutation,
             variables: {
@@ -198,15 +216,18 @@ describe('AuthResolver integration', () => {
               },
             },
           });
-          const errors =
-            response.errors[0].extensions.exception.validationErrors;
-
-          expect(errors.length).toBe(1);
-          expect(errors[0].constraints.minLength).toEqual(expected);
+          expect(response.errors).toEqual(expected);
         });
 
         it('should fail when username is greater than 20 characters', async () => {
-          const expected = 'Username must be between 3 and 20 characters';
+          const expected = [
+            {
+              field: 'username',
+              constraints: {
+                maxLength: 'Username must be between 3 and 20 characters',
+              },
+            },
+          ];
           const response = await mutate({
             mutation: signUpMutation,
             variables: {
@@ -217,16 +238,19 @@ describe('AuthResolver integration', () => {
               },
             },
           });
-          const errors =
-            response.errors[0].extensions.exception.validationErrors;
-
-          expect(errors.length).toBe(1);
-          expect(errors[0].constraints.maxLength).toEqual(expected);
+          expect(response.errors).toEqual(expected);
         });
       });
 
       it('should fail when password is less than 8 characters', async () => {
-        const expected = 'Password must be at least 8 characters long';
+        const expected = [
+          {
+            field: 'password',
+            constraints: {
+              minLength: 'Password must be at least 8 characters long',
+            },
+          },
+        ];
         const response = await mutate({
           mutation: signUpMutation,
           variables: {
@@ -237,10 +261,8 @@ describe('AuthResolver integration', () => {
             },
           },
         });
-        const errors = response.errors[0].extensions.exception.validationErrors;
 
-        expect(errors.length).toBe(1);
-        expect(errors[0].constraints.minLength).toEqual(expected);
+        expect(response.errors).toEqual(expected);
       });
     });
   });
