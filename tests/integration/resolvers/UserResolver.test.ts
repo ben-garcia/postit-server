@@ -14,6 +14,7 @@ import {
 import {
   createTestConnection,
   createSchema,
+  formatResponse,
   TestUtils,
 } from '../../../src/utils';
 
@@ -43,8 +44,10 @@ describe('UserResolver integration', () => {
 
     const schema = await createSchema();
     const server = new ApolloServer({
-      schema,
       context: () => ({ res: { cookie: jest.fn() } }),
+      // @ts-ignore
+      formatResponse,
+      schema,
     });
 
     const testServer = createTestClient(server);
@@ -81,31 +84,41 @@ describe('UserResolver integration', () => {
       });
 
       it('should fail when username less than 3 characters', async () => {
-        const expected = 'Username must be between 3 and 20 characters';
+        const expected = [
+          {
+            field: 'username',
+            constraints: {
+              minLength: 'Username must be between 3 and 20 characters',
+            },
+          },
+        ];
         const response = await query({
           query: isUsernameUnique,
           variables: {
             username: 'b',
           },
         });
-        const errors = response.errors[0].extensions.exception.validationErrors;
 
-        expect(errors.length).toBe(1);
-        expect(errors[0].constraints.minLength).toEqual(expected);
+        expect(response.errors).toEqual(expected);
       });
 
       it('should fail when username greater than 20 characters', async () => {
-        const expected = 'Username must be between 3 and 20 characters';
+        const expected = [
+          {
+            field: 'username',
+            constraints: {
+              maxLength: 'Username must be between 3 and 20 characters',
+            },
+          },
+        ];
         const response = await query({
           query: isUsernameUnique,
           variables: {
             username: 'benjskfajalkjfksajdfjalsfdkjsa',
           },
         });
-        const errors = response.errors[0].extensions.exception.validationErrors;
 
-        expect(errors.length).toBe(1);
-        expect(errors[0].constraints.maxLength).toEqual(expected);
+        expect(response.errors).toEqual(expected);
       });
     });
   });
