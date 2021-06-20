@@ -1,6 +1,14 @@
 import { IsEmail, MinLength, MaxLength } from 'class-validator';
 import { Service } from 'typedi';
-import { Arg, Ctx, Field, InputType, Mutation, Resolver } from 'type-graphql';
+import {
+  Arg,
+  Ctx,
+  Field,
+  InputType,
+  Mutation,
+  ObjectType,
+  Resolver,
+} from 'type-graphql';
 
 import { IsUsernameUnique } from '../decorators';
 import {
@@ -41,6 +49,46 @@ class SignUpInput {
 }
 
 /**
+ * This class represents the possible validation error.
+ *
+ */
+@ObjectType()
+class SignUpErrorConstraints {
+  @Field(() => String, { nullable: true })
+  isEmail?: string;
+
+  @Field(() => String, { nullable: true })
+  maxLength?: string;
+
+  @Field(() => String, { nullable: true })
+  minLength?: string;
+}
+
+/**
+ * This class represents the format for a signup error
+ */
+@ObjectType()
+class SignUpError {
+  @Field(() => SignUpErrorConstraints)
+  constraints: SignUpErrorConstraints;
+
+  @Field()
+  field: string;
+}
+
+/**
+ * This class represents the response for the signUp method.
+ */
+@ObjectType()
+class SignUpResponse {
+  @Field(() => [SignUpError], { nullable: true })
+  errors?: SignUpError[];
+
+  @Field(() => Boolean, { nullable: true })
+  created?: boolean;
+}
+
+/**
  * This class defines the queries and mutations associated with
  * the auth controller.
  */
@@ -67,11 +115,11 @@ class AuthResolver {
   /**
    * Mutation the create a user in the database.
    */
-  @Mutation(() => Boolean)
+  @Mutation(() => SignUpResponse)
   async signUp(
     @Arg('createUserData', () => SignUpInput) createUserData: SignUpInput,
     @Ctx() { res }: MyContext
-  ): Promise<boolean> {
+  ): Promise<SignUpResponse> {
     try {
       const cookieOptions = {
         httpOnly: true,
@@ -115,12 +163,12 @@ class AuthResolver {
         refreshToken
       );
 
-      return true;
+      return { created: true };
     } catch (e) {
       // eslint-disable-next-line
 			console.log('signUp mutation error: ', e);
 
-      return false;
+      return { created: false };
     }
   }
 }
