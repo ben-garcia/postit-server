@@ -30,7 +30,17 @@ describe('AuthResolver integration', () => {
   let testUtils: TestUtils;
   const signUpMutation = `
 	mutation Register($createUserData: SignUpInput!) {
-		signUp(createUserData: $createUserData)
+		signUp(createUserData: $createUserData) {
+			created
+			errors {
+				field
+				constraints {
+					isEmail
+					maxLength
+					minLength
+				}
+			}
+		}
 	}
 `;
   const fakeUser = {
@@ -110,7 +120,7 @@ describe('AuthResolver integration', () => {
           setex: jest.fn(),
         }));
 
-        const expected = { signUp: true };
+        const expected = { signUp: { errors: null, created: true } };
         const response = await mutate({
           mutation: signUpMutation,
           variables: {
@@ -129,7 +139,7 @@ describe('AuthResolver integration', () => {
           setex: jest.fn(),
         }));
 
-        const expected = { signUp: true };
+        const expected = { signUp: { errors: null, created: true } };
         const response = await mutate({
           mutation: signUpMutation,
           variables: {
