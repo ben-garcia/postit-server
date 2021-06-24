@@ -18,6 +18,7 @@ import {
 import {
   createEmailTemplate,
   createRedisClient,
+  createTestConnection,
   createTransporter,
   createSchema,
   formatResponse,
@@ -26,8 +27,12 @@ import {
 dotenv.config();
 
 (async () => {
-  // establish the connection to the database.
-  await createConnection();
+  if (process.env.CYPRESS_TEST) {
+    await createTestConnection();
+  } else {
+    // establish the connection to the database.
+    await createConnection();
+  }
 
   // Set values on the injected properties.
   Container.set('userRepository', getRepository(User));

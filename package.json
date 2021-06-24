@@ -67,6 +67,7 @@
     "db:show": "ts-node ./node_modules/typeorm/cli.js migration:show",
     "format": "prettier --write 'src/**/*.{ts,json,md}'",
     "start": "nodemon --exec ts-node src/index.ts",
+    "start:cy": "CYPRESS_TEST=true nodemon --exec ts-node src/index.ts",
     "lint": "eslint . --ext js,ts --fix",
     "test": "jest --runInBand",
     "test:watch": "jest --watch  --runInBand --detectOpenHandles",
