@@ -7,8 +7,20 @@ import { buildSchema } from 'type-graphql';
  * Sets up the schema using the resolvers in the resolvers directory
  * and adds a typedi container.
  */
-export const createSchema = () =>
-  buildSchema({
+export const createSchema = () => {
+  const resolvers = [
+    `${__dirname}/../resolvers/AuthResolver.ts`,
+    `${__dirname}/../resolvers/UserResolver.ts`,
+  ];
+
+  // add test resolver when performing 2e2 testing.
+  if (process.env.CYPRESS_TEST) {
+    resolvers.push(`${__dirname}/../utils/TestResolver.ts`);
+  }
+
+  return buildSchema({
     container: Container,
-    resolvers: [`${__dirname}/../resolvers/*.ts`],
+    // @ts-ignore
+    resolvers,
   });
+};
