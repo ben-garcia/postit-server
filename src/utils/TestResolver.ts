@@ -77,8 +77,9 @@ class TestResolver {
       await this.userService.create(createUserData);
 
       // only send an email verification is the user
-      // provides an email address.
-      if (email) {
+      // provides an email address and
+      // not performing e2e tests.
+      if (email && !process.env.CYPRESS_TEST) {
         await this.mailService.sendVerificationEmail(
           email,
           username,
