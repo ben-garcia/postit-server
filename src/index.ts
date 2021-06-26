@@ -74,8 +74,18 @@ dotenv.config();
     formatResponse,
     schema,
   });
+  const cors = {
+    // send relevant cookies
+    credentials: true,
+    methods: ['POST'],
+    // should match the origin of the request
+    origin: process.env.CLIENT_URL ?? 'http://localhost:3000',
+  };
 
-  server.applyMiddleware({ app });
+  server.applyMiddleware({
+    app,
+    cors,
+  });
 
   app.listen(4000, () =>
     // eslint-disable-next-line no-console
