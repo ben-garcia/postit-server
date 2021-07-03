@@ -12,6 +12,7 @@ import {
 
 import { IsUsernameUnique } from '../decorators';
 import {
+  BcryptService,
   JwtService,
   MailService,
   RedisService,
@@ -41,6 +42,18 @@ class SignUpInput {
   @MinLength(3, { message: 'Username must be between 3 and 20 characters' })
   @MaxLength(20, { message: 'Username must be between 3 and 20 characters' })
   @IsUsernameUnique({ message: 'That username is already taken' })
+  username: string;
+
+  @Field()
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
+  password: string;
+}
+
+@InputType()
+class LogInInput {
+  @Field()
+  @MinLength(3, { message: 'Username must be between 3 and 20 characters' })
+  @MaxLength(20, { message: 'Username must be between 3 and 20 characters' })
   username: string;
 
   @Field()
@@ -88,6 +101,12 @@ class SignUpResponse {
   created?: boolean;
 }
 
+@ObjectType()
+class LogInResponse {
+  @Field(() => Boolean, { nullable: true })
+  success?: boolean;
+}
+
 /**
  * This class defines the queries and mutations associated with
  * the auth controller.
@@ -95,21 +114,88 @@ class SignUpResponse {
 @Resolver()
 @Service()
 class AuthResolver {
+  public bcryptService: BcryptService;
   public jwtService: JwtService;
   public mailService: MailService;
   public redisService: RedisService;
   public userService: UserService;
 
   constructor(
+    bcryptService: BcryptService,
     jwtService: JwtService,
     mailService: MailService,
     redisService: RedisService,
     userService: UserService
   ) {
+    this.bcryptService = bcryptService;
     this.jwtService = jwtService;
     this.mailService = mailService;
     this.redisService = redisService;
     this.userService = userService;
+  }
+
+  /**
+   * Mutation to login the user
+   */
+  @Mutation(() => LogInResponse)
+  async logIn(
+    @Arg('logInData', () => LogInInput) logInData: LogInInput,
+    @Ctx() { res }: MyContext
+  ): Promise<LogInResponse> {
+    try {
+      const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production' ?? false,
+        signed: true,
+      };
+      const { password, username } = logInData;
+      const user = await this.userService.getByUsername(username);
+
+      // don't give too much information
+      if (!user) {
+        return { success: false };
+      }
+
+      const valid = await this.bcryptService.validatePassword(
+        password,
+        user.password
+      );
+
+      // don't give too much information
+      if (!valid) {
+        return { success: false };
+      }
+
+      // get token to send to the client via cookies.
+      const [accessToken, refreshToken] = this.jwtService.createTokens({
+        email: user?.email,
+        username,
+      });
+
+      res.cookie('session-access-token', accessToken, {
+        ...cookieOptions,
+        maxAge: 60 * 60 * 15, // 15 minutes
+      });
+
+      res.cookie('session-refresh-token', refreshToken, {
+        ...cookieOptions,
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+      });
+
+      // save the refresh token to redis.
+      await this.redisService.add(
+        `${username}:refreshToken`,
+        60 * 60 * 24 * 365, // 1 year
+        refreshToken
+      );
+
+      return { success: true };
+    } catch (e) {
+      // eslint-disable-next-line
+			console.log('logIn mutation error: ', e);
+
+      return { success: false };
+    }
   }
 
   /**
