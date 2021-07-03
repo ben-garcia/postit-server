@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { ApolloServer } from 'apollo-server-express';
+import bcrypt from 'bcrypt';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -50,6 +51,7 @@ dotenv.config();
     getRepository(EmailNotificationPreferences)
   );
   Container.set('transporter', await createTransporter());
+  Container.set('bcrypt', bcrypt);
   Container.set('jwt', jwt);
   Container.set('redisClient', createRedisClient());
   Container.set('emailTemplate', createEmailTemplate());
