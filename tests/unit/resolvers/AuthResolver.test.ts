@@ -7,6 +7,9 @@ describe('AuthResolver unit', () => {
   let authResolver: AuthResolver;
 
   beforeEach(() => {
+    const mockBcrypt = {
+      compare: jest.fn(),
+    };
     const mockJwt = {
       sign: jest.fn(),
     };
@@ -22,6 +25,11 @@ describe('AuthResolver unit', () => {
       del: jest.fn(),
       setex: jest.fn(),
     };
+
+    function MockBcryptService(this: any, bcrypt: typeof mockBcrypt) {
+      this.validatePassword = jest.fn();
+      this.bcrypt = bcrypt;
+    }
 
     function MockJwtService(this: any, jwt: typeof mockJwt) {
       this.createTokens = jest.fn();
@@ -56,6 +64,7 @@ describe('AuthResolver unit', () => {
     }
 
     authResolver = new AuthResolver(
+      new (MockBcryptService as any)(mockBcrypt),
       new (MockJwtService as any)(mockJwt),
       new (MockMailService as any)(mockTransporter),
       new (MockRedisService as any)(mockIoRedis),
@@ -65,6 +74,95 @@ describe('AuthResolver unit', () => {
 
   it('should define a module', () => {
     expect(authResolver).toBeDefined();
+  });
+
+  describe('logIn mutation', () => {
+    const fakeToken = 'thisisthefaketoken';
+
+    // @ts-ignore
+    createToken.mockImplementationOnce(() => fakeToken);
+
+    it('should call userService.getByUsername, bcryptService.validatePassword, res.cookie and redisService.add, jwtService.createTokens, redisService.add', async () => {
+      const logInData = {
+        password: 'benbenben',
+        username: 'benben',
+      };
+      const hashedPassword = 'hashedPassword';
+      const expectedCookieOptions = {
+        httpOnly: true,
+        secure: false,
+        signed: true,
+      };
+      const mockContext: any = {
+        res: {
+          cookie: jest.fn(),
+        },
+      };
+      const accessToken = 'accessToken';
+      const refreshToken = 'refreshToken';
+      const expectedLogInParams = {
+        ...logInData,
+      };
+
+      authResolver.jwtService.createTokens = jest
+        .fn()
+        .mockReturnValue([accessToken, refreshToken]);
+
+      authResolver.userService.getByUsername = jest
+        .fn()
+        .mockReturnValue({ password: hashedPassword });
+
+      authResolver.bcryptService.validatePassword = jest
+        .fn()
+        .mockReturnValue(true);
+
+      await authResolver.logIn(logInData, mockContext);
+
+      expect(authResolver.userService.getByUsername).toHaveBeenCalledTimes(1);
+      expect(authResolver.userService.getByUsername).toHaveBeenCalledWith(
+        expectedLogInParams.username
+      );
+
+      expect(authResolver.bcryptService.validatePassword).toHaveBeenCalledTimes(
+        1
+      );
+      expect(authResolver.bcryptService.validatePassword).toHaveBeenCalledWith(
+        logInData.password,
+        hashedPassword
+      );
+
+      expect(authResolver.jwtService.createTokens).toHaveBeenCalledTimes(1);
+      expect(authResolver.jwtService.createTokens).toHaveBeenCalledWith({
+        username: logInData.username,
+      });
+
+      expect(mockContext.res.cookie).toHaveBeenCalledTimes(2);
+      expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
+        1,
+        'session-access-token',
+        accessToken,
+        {
+          ...expectedCookieOptions,
+          maxAge: 60 * 60 * 15,
+        }
+      );
+      expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
+        2,
+        'session-refresh-token',
+        refreshToken,
+        {
+          ...expectedCookieOptions,
+          maxAge: 60 * 60 * 24 * 365,
+        }
+      );
+
+      expect(authResolver.redisService.add).toHaveBeenCalledTimes(1);
+      expect(authResolver.redisService.add).toHaveBeenCalledWith(
+        `${logInData.username}:refreshToken`,
+        60 * 60 * 24 * 365, // 1 year
+        refreshToken
+      );
+    });
   });
 
   describe('signUp mutation', () => {
