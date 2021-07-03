@@ -1,3 +1,4 @@
+import BcryptService from './BcryptService';
 import GeneralPreferencesService from './GeneralPreferencesService';
 import NotificationPreferencesService from './NotificationPreferencesService';
 import EmailNotificationPreferencesService from './EmailNotificationPreferencesService';
@@ -8,6 +9,7 @@ import RedisService from './RedisService';
 import UserService from './UserService';
 
 export {
+  BcryptService,
   GeneralPreferencesService,
   NotificationPreferencesService,
   EmailNotificationPreferencesService,
