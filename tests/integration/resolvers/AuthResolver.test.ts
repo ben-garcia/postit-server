@@ -1,5 +1,6 @@
 import { ApolloServer } from 'apollo-server-express';
 import { createTestClient } from 'apollo-server-testing';
+import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import { Container } from 'typedi';
@@ -28,26 +29,6 @@ dotenv.config();
 describe('AuthResolver integration', () => {
   let mutate: any;
   let testUtils: TestUtils;
-  const signUpMutation = `
-	mutation Register($createUserData: SignUpInput!) {
-		signUp(createUserData: $createUserData) {
-			created
-			errors {
-				field
-				constraints {
-					isEmail
-					maxLength
-					minLength
-				}
-			}
-		}
-	}
-`;
-  const fakeUser = {
-    email: 'ben@ben.com',
-    username: 'benben',
-    password: 'benbenben',
-  };
 
   beforeAll(async () => {
     testUtils = new TestUtils(await createTestConnection());
@@ -68,6 +49,7 @@ describe('AuthResolver integration', () => {
     );
     Container.set('transporter', await createTransporter());
     Container.set('jwt', jwt);
+    Container.set('bcrypt', bcrypt);
     Container.set('redisClient', createRedisClient());
     Container.set('emailTemplate', createEmailTemplate());
 
@@ -95,6 +77,27 @@ describe('AuthResolver integration', () => {
 
   describe('Mutations', () => {
     describe('signUp', () => {
+      const signUpMutation = `
+				mutation SignUp($createUserData: SignUpInput!) {
+					signUp(createUserData: $createUserData) {
+						created
+						errors {
+							field
+							constraints {
+								isEmail
+								maxLength
+								minLength
+							}
+						}
+					}
+				}
+			`;
+      const fakeUser = {
+        email: 'ben@ben.com',
+        username: 'benben',
+        password: 'benbenben',
+      };
+
       it('should succesfully create a user', async () => {
         // Mock the implementation of the MailService.sendVerificationEmail
         // There is no need to send test email to ethereal during testing.
@@ -113,8 +116,7 @@ describe('AuthResolver integration', () => {
             }),
           }));
 
-        // Mock the implementation of the MailService.sendVerificationEmail
-        // There is no need to send test email to ethereal during testing.
+        // Mock the implementation of the RedisService.add
         // @ts-ignore
         jest.spyOn(RedisService.prototype, 'add').mockImplementation(() => ({
           setex: jest.fn(),
@@ -252,27 +254,138 @@ describe('AuthResolver integration', () => {
         });
       });
 
-      it('should fail when password is less than 8 characters', async () => {
-        const expected = [
-          {
-            field: 'password',
-            constraints: {
-              minLength: 'Password must be at least 8 characters long',
+      describe('password', () => {
+        it('should fail when password is less than 8 characters', async () => {
+          const expected = [
+            {
+              field: 'password',
+              constraints: {
+                minLength: 'Password must be at least 8 characters long',
+              },
             },
-          },
-        ];
+          ];
+          const response = await mutate({
+            mutation: signUpMutation,
+            variables: {
+              createUserData: {
+                email: 'ben2@ben.com',
+                username: 'benbenben',
+                password: 'ben',
+              },
+            },
+          });
+
+          expect(response.errors).toEqual(expected);
+        });
+      });
+    });
+
+    describe('logIn', () => {
+      const logInMutation = `
+				mutation LogIn($logInData: LogInInput!) {
+					logIn(logInData: $logInData) {
+						success
+					}
+				}
+			`;
+      const fakeUser = {
+        username: 'benben',
+        password: 'benbenben',
+      };
+
+      beforeEach(async () => {
+        // Mock the implementation of the RedisService.add
+        // @ts-ignore
+        jest.spyOn(RedisService.prototype, 'add').mockImplementation(() => ({
+          setex: jest.fn(),
+        }));
+
+        await testUtils
+          .getConnection()
+          .getRepository(User)
+          .create(fakeUser)
+          .save();
+      });
+
+      it('should succesfully log in', async () => {
+        const expected = { logIn: { success: true } };
         const response = await mutate({
-          mutation: signUpMutation,
+          mutation: logInMutation,
           variables: {
-            createUserData: {
-              email: 'ben2@ben.com',
-              username: 'benbenben',
-              password: 'ben',
-            },
+            logInData: fakeUser,
           },
         });
 
-        expect(response.errors).toEqual(expected);
+        expect(response.data).toEqual(expected);
+      });
+
+      describe('username', () => {
+        it('should fail when username is less than 3 characters', async () => {
+          const expected = [
+            {
+              field: 'username',
+              constraints: {
+                minLength: 'Username must be between 3 and 20 characters',
+              },
+            },
+          ];
+          const response = await mutate({
+            mutation: logInMutation,
+            variables: {
+              logInData: {
+                ...fakeUser,
+                username: 'be',
+              },
+            },
+          });
+          expect(response.errors).toEqual(expected);
+        });
+
+        it('should fail when username is greater than 20 characters', async () => {
+          const expected = [
+            {
+              field: 'username',
+              constraints: {
+                maxLength: 'Username must be between 3 and 20 characters',
+              },
+            },
+          ];
+          const response = await mutate({
+            mutation: logInMutation,
+            variables: {
+              logInData: {
+                ...fakeUser,
+                username: 'thisisaverylongpassword',
+              },
+            },
+          });
+
+          expect(response.errors).toEqual(expected);
+        });
+      });
+
+      describe('password', () => {
+        it('should fail when password is less than 8 characters', async () => {
+          const expected = [
+            {
+              field: 'password',
+              constraints: {
+                minLength: 'Password must be at least 8 characters long',
+              },
+            },
+          ];
+          const response = await mutate({
+            mutation: logInMutation,
+            variables: {
+              logInData: {
+                ...fakeUser,
+                password: 'ben',
+              },
+            },
+          });
+
+          expect(response.errors).toEqual(expected);
+        });
       });
     });
   });
