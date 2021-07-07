@@ -8,12 +8,14 @@ import {
   JoinColumn,
   Index,
   OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Field, ObjectType, ID } from 'type-graphql';
 
 import {
+  Community,
   GeneralPreferences,
   NotificationPreferences,
   EmailNotificationPreferences,
@@ -26,6 +28,10 @@ class User extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Field(() => [Community])
+  @OneToMany(() => Community, community => community.creator)
+  communities: Community[];
 
   @Column({ nullable: true })
   @Field(() => String, { nullable: true })
