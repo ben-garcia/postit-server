@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 export interface MyContext {
-  req: Request;
+  req: Request & { username: string };
   res: Response;
 }
 
