@@ -143,7 +143,7 @@ describe('AuthResolver unit', () => {
         accessToken,
         {
           ...expectedCookieOptions,
-          maxAge: 60 * 60 * 15,
+          maxAge: 1000 * 60 * 60 * 15,
         }
       );
       expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
@@ -152,7 +152,7 @@ describe('AuthResolver unit', () => {
         refreshToken,
         {
           ...expectedCookieOptions,
-          maxAge: 60 * 60 * 24 * 365,
+          maxAge: 1000 * 60 * 60 * 24 * 365,
         }
       );
 
@@ -228,7 +228,7 @@ describe('AuthResolver unit', () => {
         accessToken,
         {
           ...expectedCookieOptions,
-          maxAge: 60 * 60 * 15,
+          maxAge: 1000 * 60 * 60 * 15,
         }
       );
       expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
@@ -237,7 +237,7 @@ describe('AuthResolver unit', () => {
         refreshToken,
         {
           ...expectedCookieOptions,
-          maxAge: 60 * 60 * 24 * 365,
+          maxAge: 1000 * 60 * 60 * 24 * 365,
         }
       );
 
@@ -297,7 +297,7 @@ describe('AuthResolver unit', () => {
         accessToken,
         {
           ...expectedCookieOptions,
-          maxAge: 60 * 60 * 15,
+          maxAge: 1000 * 60 * 60 * 15,
         }
       );
       expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
@@ -306,7 +306,7 @@ describe('AuthResolver unit', () => {
         refreshToken,
         {
           ...expectedCookieOptions,
-          maxAge: 60 * 60 * 24 * 365,
+          maxAge: 1000 * 60 * 60 * 24 * 365,
         }
       );
 

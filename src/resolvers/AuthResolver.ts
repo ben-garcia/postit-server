@@ -174,12 +174,12 @@ class AuthResolver {
 
       res.cookie('session-access-token', accessToken, {
         ...cookieOptions,
-        maxAge: 60 * 60 * 15, // 15 minutes
+        maxAge: 1000 * 60 * 60 * 15, // 15 minutes
       });
 
       res.cookie('session-refresh-token', refreshToken, {
         ...cookieOptions,
-        maxAge: 60 * 60 * 24 * 365, // 1 year
+        maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
       });
 
       // save the refresh token to redis.
@@ -234,12 +234,12 @@ class AuthResolver {
 
       res.cookie('session-access-token', accessToken, {
         ...cookieOptions,
-        maxAge: 60 * 60 * 15, // 15 minutes
+        maxAge: 1000 * 60 * 60 * 15, // 15 minutes
       });
 
       res.cookie('session-refresh-token', refreshToken, {
         ...cookieOptions,
-        maxAge: 60 * 60 * 24 * 365, // 1 year
+        maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
       });
 
       // save the refresh token to redis.
