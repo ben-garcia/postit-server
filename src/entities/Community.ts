@@ -38,7 +38,7 @@ class Community extends BaseEntity {
   @Field(() => String, { nullable: true })
   iconUrl?: string;
 
-  @Column({ default: false })
+  @Column()
   @Field(() => String)
   isNsfw: boolean;
 
