@@ -5,4 +5,5 @@
 		 was not found in the container. Register it before usage via
 		 explicitly calling the \"Container.set\" function or using the \"@Service()\" decorator."
 		 fixed it by changing tsconfig "target" from "es5" to "es6".
+		 source: tajpouria answer on https://github.com/MichalLytek/type-graphql/issues/433
 

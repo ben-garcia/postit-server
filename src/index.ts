@@ -10,6 +10,7 @@ import { Container } from 'typedi';
 import { createConnection, getRepository } from 'typeorm';
 
 import {
+  Community,
   GeneralPreferences,
   NotificationPreferences,
   EmailNotificationPreferences,
@@ -50,6 +51,7 @@ dotenv.config();
     'emailNotificationPreferencesRepository',
     getRepository(EmailNotificationPreferences)
   );
+  Container.set('communityRepository', getRepository(Community));
   Container.set('transporter', await createTransporter());
   Container.set('bcrypt', bcrypt);
   Container.set('jwt', jwt);

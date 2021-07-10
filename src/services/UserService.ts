@@ -86,6 +86,7 @@ class UserService {
   async getAll(): Promise<User[] | undefined> {
     return this.userRepository.find({
       relations: [
+        'communities',
         'emailNotificationPreferences',
         'generalPreferences',
         'notificationPreferences',
