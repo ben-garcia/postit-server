@@ -10,6 +10,7 @@ import { buildSchema } from 'type-graphql';
 export const createSchema = () => {
   const resolvers = [
     `${__dirname}/../resolvers/AuthResolver.ts`,
+    `${__dirname}/../resolvers/CommunityResolver.ts`,
     `${__dirname}/../resolvers/UserResolver.ts`,
   ];
 

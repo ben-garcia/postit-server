@@ -1,7 +1,7 @@
 import { Connection } from 'typeorm';
-import { User } from '../entities';
+import { Community, User } from '../entities';
 
-type Entities = 'users';
+type Entities = 'communities' | 'users';
 
 /**
  * Provides helper methods for testing.
@@ -20,8 +20,13 @@ class TestUtils {
    * Clear the tables.
    */
   async clearTables(...tables: Entities[]): Promise<void> {
+    if (tables.includes('communities')) {
+      await this.getConnection()
+        .getRepository(Community)
+        .query('DELETE FROM communities');
+    }
     if (tables.includes('users')) {
-      await this.getConnection().getRepository(User).clear();
+      await this.getConnection().getRepository(User).query('DELETE FROM users');
     }
   }
 
