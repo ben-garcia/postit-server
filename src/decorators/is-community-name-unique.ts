@@ -1,24 +1,24 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
 
-import { User } from '../entities';
+import { Community } from '../entities';
 
 /**
  * Custom class-validator decorator.
  *
- * Used to check for a unique username.
+ * Used to check for a unique community name.
  */
-function IsUsernameUnique(validationOptions?: ValidationOptions) {
+function IsCommunityNameUnique(validationOptions?: ValidationOptions) {
   return (object: Object, propertyName: string) => {
     registerDecorator({
-      name: 'isUsernameUnique',
+      name: 'isCommunityNameUnique',
       target: object.constructor,
       propertyName,
       options: validationOptions,
       validator: {
-        validate: async (username: string): Promise<boolean> => {
+        validate: async (name: string): Promise<boolean> => {
           try {
-            const user = await User.findOne({ where: { username } });
-            if (user) {
+            const community = await Community.findOne({ where: { name } });
+            if (community) {
               return false;
             }
             return true;
@@ -31,4 +31,4 @@ function IsUsernameUnique(validationOptions?: ValidationOptions) {
   };
 }
 
-export default IsUsernameUnique;
+export default IsCommunityNameUnique;
