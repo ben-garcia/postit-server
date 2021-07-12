@@ -1,8 +1,7 @@
-import { ApolloServer } from 'apollo-server-express';
-import { createTestClient } from 'apollo-server-testing';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+import request from 'supertest';
 import { Container } from 'typedi';
 import { getRepository } from 'typeorm';
 
@@ -12,8 +11,6 @@ import {
   createRedisClient,
   createTestConnection,
   createTransporter,
-  createSchema,
-  formatResponse,
   TestUtils,
 } from '../../../src/utils';
 import {
@@ -27,7 +24,6 @@ import {
 dotenv.config();
 
 describe('AuthResolver integration', () => {
-  let mutate: any;
   let testUtils: TestUtils;
 
   beforeAll(async () => {
@@ -52,18 +48,6 @@ describe('AuthResolver integration', () => {
     Container.set('bcrypt', bcrypt);
     Container.set('redisClient', createRedisClient());
     Container.set('emailTemplate', createEmailTemplate());
-
-    const schema = await createSchema();
-    const server = new ApolloServer({
-      context: () => ({ res: { cookie: jest.fn() } }),
-      // @ts-ignore
-      formatResponse,
-      schema,
-    });
-
-    const testServer = createTestClient(server);
-
-    mutate = testServer.mutate;
   });
 
   beforeEach(async () => {
@@ -77,21 +61,6 @@ describe('AuthResolver integration', () => {
 
   describe('Mutations', () => {
     describe('signUp', () => {
-      const signUpMutation = `
-				mutation SignUp($createUserData: SignUpInput!) {
-					signUp(createUserData: $createUserData) {
-						created
-						errors {
-							field
-							constraints {
-								isEmail
-								maxLength
-								minLength
-							}
-						}
-					}
-				}
-			`;
       const fakeUser = {
         email: 'ben@ben.com',
         username: 'benben',
@@ -122,61 +91,149 @@ describe('AuthResolver integration', () => {
           setex: jest.fn(),
         }));
 
-        const expected = { signUp: { errors: null, created: true } };
-        const response = await mutate({
-          mutation: signUpMutation,
-          variables: {
-            createUserData: fakeUser,
-          },
-        });
+        const expected = { data: { signUp: { errors: null, created: true } } };
+        const response = await request(testUtils.getApp())
+          .post('/graphql')
+          .send({
+            query: `
+							mutation {
+								signUp(
+									createUserData: {
+										email: "${fakeUser.email}"
+										username: "${fakeUser.username}"
+										password: "${fakeUser.password}"
+									}
+								) {
+									created
+									errors {
+										field
+										constraints {
+											isEmail
+											maxLength
+											minLength
+										}
+									}
+								}
+							}
+						`,
+          })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(201);
 
-        expect(response.data).toEqual(expected);
+        expect(response.body).toEqual(expected);
+        expect(
+          response.header['set-cookie'][0].startsWith('session-access-token')
+        ).toBe(true);
+        expect(
+          response.header['set-cookie'][1].startsWith('session-refresh-token')
+        ).toBe(true);
       });
 
       it('should succesfully create a user without an email', async () => {
         // Mock the implementation of the MailService.sendVerificationEmail
         // There is no need to send test email to ethereal during testing.
+        jest
+          .spyOn(MailService.prototype, 'sendVerificationEmail')
+          // @ts-ignore
+          .mockImplementation(() => ({
+            sendMail: jest.fn().mockReturnValue({
+              then: jest.fn(),
+              catch: jest.fn(),
+              response: {
+                length: jest.fn(),
+                lastIndexOf: jest.fn(),
+                substring: jest.fn(),
+              },
+            }),
+          }));
+
+        // Mock the implementation of the RedisService.add
         // @ts-ignore
         jest.spyOn(RedisService.prototype, 'add').mockImplementation(() => ({
           setex: jest.fn(),
         }));
 
-        const expected = { signUp: { errors: null, created: true } };
-        const response = await mutate({
-          mutation: signUpMutation,
-          variables: {
-            createUserData: {
-              username: fakeUser.username,
-              password: fakeUser.password,
-            },
-          },
-        });
+        const expected = { data: { signUp: { errors: null, created: true } } };
+        const response = await request(testUtils.getApp())
+          .post('/graphql')
+          .send({
+            query: `
+							mutation {
+								signUp(
+									createUserData: {
+										username: "${fakeUser.username}"
+										password: "${fakeUser.password}"
+									}
+								) {
+									created
+									errors {
+										field
+										constraints {
+											isEmail
+											maxLength
+											minLength
+										}
+									}
+								}
+							}
+						`,
+          })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(201);
 
-        expect(response.data).toEqual(expected);
+        expect(response.body).toEqual(expected);
+        expect(
+          response.header['set-cookie'][0].startsWith('session-access-token')
+        ).toBe(true);
+        expect(
+          response.header['set-cookie'][1].startsWith('session-refresh-token')
+        ).toBe(true);
       });
 
       describe('email', () => {
         it('should fail when email isnt formated correctly', async () => {
-          const expected = [
-            {
-              field: 'email',
-              constraints: {
-                isEmail: 'email must be an email',
+          const expected = {
+            errors: [
+              {
+                field: 'email',
+                constraints: {
+                  isEmail: 'email must be an email',
+                },
               },
-            },
-          ];
-          const response = await mutate({
-            mutation: signUpMutation,
-            variables: {
-              createUserData: {
-                ...fakeUser,
-                email: 'ben.com',
-                username: 'benbenben',
-              },
-            },
-          });
+            ],
+          };
+          const response = await request(testUtils.getApp())
+            .post('/graphql')
+            .send({
+              query: `
+								mutation {
+									signUp(
+										createUserData: {
+											email: "invalid.com"
+											username: "${fakeUser.username}"
+											password: "${fakeUser.password}"
+										}
+									) {
+										created
+										errors {
+											field
+											constraints {
+												isEmail
+												maxLength
+												minLength
+											}
+										}
+									}
+								}
+						`,
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400);
 
-          expect(response.errors).toEqual(expected);
+          expect(response.body).toEqual(expected);
         });
       });
 
@@ -188,106 +245,179 @@ describe('AuthResolver integration', () => {
             .create(fakeUser)
             .save();
 
-          const expected = [
-            {
-              field: 'username',
-              constraints: {
-                isUsernameUnique: 'That username is already taken',
+          const expected = {
+            errors: [
+              {
+                field: 'username',
+                constraints: {
+                  isUsernameUnique: 'That username is already taken',
+                },
               },
-            },
-          ];
-          const response = await mutate({
-            mutation: signUpMutation,
-            variables: {
-              createUserData: {
-                ...fakeUser,
-                email: 'ben2@ben.com',
-              },
-            },
-          });
+            ],
+          };
+          const response = await request(testUtils.getApp())
+            .post('/graphql')
+            .send({
+              query: `
+								mutation {
+									signUp(
+										createUserData: {
+											email: "${fakeUser.email}"
+											username: "${fakeUser.username}"
+											password: "${fakeUser.password}"
+										}
+									) {
+										created
+										errors {
+											field
+											constraints {
+												isEmail
+												maxLength
+												minLength
+											}
+										}
+									}
+								}
+						`,
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400);
 
-          expect(response.errors).toEqual(expected);
+          expect(response.body).toEqual(expected);
         });
 
         it('should fail when username is less than 3 characters', async () => {
-          const expected = [
-            {
-              field: 'username',
-              constraints: {
-                minLength: 'Username must be between 3 and 20 characters',
+          const expected = {
+            errors: [
+              {
+                field: 'username',
+                constraints: {
+                  minLength: 'Username must be between 3 and 20 characters',
+                },
               },
-            },
-          ];
-          const response = await mutate({
-            mutation: signUpMutation,
-            variables: {
-              createUserData: {
-                ...fakeUser,
-                email: 'ben2@ben.com',
-                username: 'be',
-              },
-            },
-          });
-          expect(response.errors).toEqual(expected);
+            ],
+          };
+          const response = await request(testUtils.getApp())
+            .post('/graphql')
+            .send({
+              query: `
+								mutation {
+									signUp(
+										createUserData: {
+											username: "be"
+											password: "${fakeUser.password}"
+										}
+									) {
+										created
+										errors {
+											field
+											constraints {
+												isEmail
+												maxLength
+												minLength
+											}
+										}
+									}
+								}
+						`,
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400);
+
+          expect(response.body).toEqual(expected);
         });
 
         it('should fail when username is greater than 20 characters', async () => {
-          const expected = [
-            {
-              field: 'username',
-              constraints: {
-                maxLength: 'Username must be between 3 and 20 characters',
+          const expected = {
+            errors: [
+              {
+                field: 'username',
+                constraints: {
+                  maxLength: 'Username must be between 3 and 20 characters',
+                },
               },
-            },
-          ];
-          const response = await mutate({
-            mutation: signUpMutation,
-            variables: {
-              createUserData: {
-                ...fakeUser,
-                email: 'ben2@ben.com',
-                username: 'thisisaverylongpassword',
-              },
-            },
-          });
-          expect(response.errors).toEqual(expected);
+            ],
+          };
+          const response = await request(testUtils.getApp())
+            .post('/graphql')
+            .send({
+              query: `
+								mutation {
+									signUp(
+										createUserData: {
+											username: "usernameislongerthan20charcters"
+											password: "${fakeUser.password}"
+										}
+									) {
+										created
+										errors {
+											field
+											constraints {
+												isEmail
+												maxLength
+												minLength
+											}
+										}
+									}
+								}
+						`,
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400);
+
+          expect(response.body).toEqual(expected);
         });
       });
 
       describe('password', () => {
         it('should fail when password is less than 8 characters', async () => {
-          const expected = [
-            {
-              field: 'password',
-              constraints: {
-                minLength: 'Password must be at least 8 characters long',
+          const expected = {
+            errors: [
+              {
+                field: 'password',
+                constraints: {
+                  minLength: 'Password must be at least 8 characters long',
+                },
               },
-            },
-          ];
-          const response = await mutate({
-            mutation: signUpMutation,
-            variables: {
-              createUserData: {
-                email: 'ben2@ben.com',
-                username: 'benbenben',
-                password: 'ben',
-              },
-            },
-          });
+            ],
+          };
+          const response = await request(testUtils.getApp())
+            .post('/graphql')
+            .send({
+              query: `
+								mutation {
+									signUp(
+										createUserData: {
+											username: "${fakeUser.username}"
+											password: "invalid"
+										}
+									) {
+										created
+										errors {
+											field
+											constraints {
+												isEmail
+												maxLength
+												minLength
+											}
+										}
+									}
+								}
+						`,
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400);
 
-          expect(response.errors).toEqual(expected);
+          expect(response.body).toEqual(expected);
         });
       });
     });
 
     describe('logIn', () => {
-      const logInMutation = `
-				mutation LogIn($logInData: LogInInput!) {
-					logIn(logInData: $logInData) {
-						success
-					}
-				}
-			`;
       const fakeUser = {
         username: 'benben',
         password: 'benbenben',
@@ -308,83 +438,157 @@ describe('AuthResolver integration', () => {
       });
 
       it('should succesfully log in', async () => {
-        const expected = { logIn: { success: true } };
-        const response = await mutate({
-          mutation: logInMutation,
-          variables: {
-            logInData: fakeUser,
-          },
-        });
+        const expected = { data: { logIn: { success: true } } };
+        const response = await request(testUtils.getApp())
+          .post('/graphql')
+          .send({
+            query: `
+								mutation {
+									logIn(
+										logInData: {
+											username: "${fakeUser.username}"
+											password: "${fakeUser.password}"
+										}
+									) {
+										success
+									}
+								}
+						`,
+          })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200);
 
-        expect(response.data).toEqual(expected);
+        expect(response.body).toEqual(expected);
       });
 
       describe('username', () => {
         it('should fail when username is less than 3 characters', async () => {
-          const expected = [
-            {
-              field: 'username',
-              constraints: {
-                minLength: 'Username must be between 3 and 20 characters',
+          const expected = {
+            errors: [
+              {
+                field: 'username',
+                constraints: {
+                  minLength: 'Username must be between 3 and 20 characters',
+                },
               },
-            },
-          ];
-          const response = await mutate({
-            mutation: logInMutation,
-            variables: {
-              logInData: {
-                ...fakeUser,
-                username: 'be',
-              },
-            },
-          });
-          expect(response.errors).toEqual(expected);
+            ],
+          };
+          const response = await request(testUtils.getApp())
+            .post('/graphql')
+            .send({
+              query: `
+								mutation {
+									logIn(
+										logInData: {
+											username: "be"
+											password: "${fakeUser.password}"
+										}
+									) {
+										success
+										errors {
+											field
+											constraints {
+												isEmail
+												maxLength
+												minLength
+											}
+										}
+									}
+								}
+						`,
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400);
+
+          expect(response.body).toEqual(expected);
         });
 
         it('should fail when username is greater than 20 characters', async () => {
-          const expected = [
-            {
-              field: 'username',
-              constraints: {
-                maxLength: 'Username must be between 3 and 20 characters',
+          const expected = {
+            errors: [
+              {
+                field: 'username',
+                constraints: {
+                  maxLength: 'Username must be between 3 and 20 characters',
+                },
               },
-            },
-          ];
-          const response = await mutate({
-            mutation: logInMutation,
-            variables: {
-              logInData: {
-                ...fakeUser,
-                username: 'thisisaverylongpassword',
-              },
-            },
-          });
+            ],
+          };
+          const response = await request(testUtils.getApp())
+            .post('/graphql')
+            .send({
+              query: `
+								mutation {
+									logIn(
+										logInData: {
+											username: "thisisaninvalidusernamegreaterthan20chars"
+											password: "${fakeUser.password}"
+										}
+									) {
+										success
+										errors {
+											field
+											constraints {
+												isEmail
+												maxLength
+												minLength
+											}
+										}
+									}
+								}
+						`,
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400);
 
-          expect(response.errors).toEqual(expected);
+          expect(response.body).toEqual(expected);
         });
       });
 
       describe('password', () => {
         it('should fail when password is less than 8 characters', async () => {
-          const expected = [
-            {
-              field: 'password',
-              constraints: {
-                minLength: 'Password must be at least 8 characters long',
+          const expected = {
+            errors: [
+              {
+                field: 'password',
+                constraints: {
+                  minLength: 'Password must be at least 8 characters long',
+                },
               },
-            },
-          ];
-          const response = await mutate({
-            mutation: logInMutation,
-            variables: {
-              logInData: {
-                ...fakeUser,
-                password: 'ben',
-              },
-            },
-          });
+            ],
+          };
+          const response = await request(testUtils.getApp())
+            .post('/graphql')
+            .send({
+              query: `
+								mutation {
+									logIn(
+										logInData: {
+											username: "${fakeUser.username}"
+											password: "invalid"
+										}
+									) {
+										success
+										errors {
+											field
+											constraints {
+												isEmail
+												maxLength
+												minLength
+											}
+										}
+									}
+								}
+						`,
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400);
 
-          expect(response.errors).toEqual(expected);
+          expect(response.body).toEqual(expected);
         });
       });
     });
