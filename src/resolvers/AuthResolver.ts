@@ -66,7 +66,7 @@ class LogInInput {
  *
  */
 @ObjectType()
-class SignUpErrorConstraints {
+class AuthErrorConstraints {
   @Field(() => String, { nullable: true })
   isEmail?: string;
 
@@ -81,9 +81,9 @@ class SignUpErrorConstraints {
  * This class represents the format for a signup error
  */
 @ObjectType()
-class SignUpError {
-  @Field(() => SignUpErrorConstraints)
-  constraints: SignUpErrorConstraints;
+class AuthErrors {
+  @Field(() => AuthErrorConstraints)
+  constraints: AuthErrorConstraints;
 
   @Field()
   field: string;
@@ -94,8 +94,8 @@ class SignUpError {
  */
 @ObjectType()
 class SignUpResponse {
-  @Field(() => [SignUpError], { nullable: true })
-  errors?: SignUpError[];
+  @Field(() => [AuthErrors], { nullable: true })
+  errors?: AuthErrors[];
 
   @Field(() => Boolean, { nullable: true })
   created?: boolean;
@@ -103,6 +103,9 @@ class SignUpResponse {
 
 @ObjectType()
 class LogInResponse {
+  @Field(() => [AuthErrors], { nullable: true })
+  errors?: AuthErrors[];
+
   @Field(() => Boolean, { nullable: true })
   success?: boolean;
 }
@@ -249,10 +252,14 @@ class AuthResolver {
         refreshToken
       );
 
+      res.status(201);
+
       return { created: true };
     } catch (e) {
       // eslint-disable-next-line
 			console.log('signUp mutation error: ', e);
+
+      res.status(500);
 
       return { created: false };
     }
