@@ -28,7 +28,7 @@ dotenv.config();
 
 class App {
   public app: Application;
-  private server: ApolloServer;
+  public server: ApolloServer;
 
   constructor() {
     this.app = express();
@@ -38,6 +38,17 @@ class App {
   }
 
   private async initializeMiddleware() {
+    const cookieSecret = process.env.COOKIE_SECRET || 'cookiesecret';
+
+    this.app.use(cookieParser(cookieSecret));
+    this.app.use(
+      helmet({
+        // play nice with graphql playground
+        contentSecurityPolicy:
+          process.env.NODE_ENV === 'production' ? undefined : false,
+      })
+    );
+
     // Set values on the injected properties.
     Container.set('userRepository', getRepository(User));
     Container.set('profileRepository', getRepository(Profile));
@@ -59,17 +70,18 @@ class App {
     Container.set('jwt', jwt);
     Container.set('redisClient', createRedisClient());
     Container.set('emailTemplate', createEmailTemplate());
+  }
 
-    const cookieSecret = process.env.COOKIE_SECRET || 'cookiesecret';
+  private async initializeServer() {
+    // builds the GraphQL schema using the resolver classes.
+    const schema = await createSchema();
 
-    this.app.use(cookieParser(cookieSecret));
-    this.app.use(
-      helmet({
-        // play nice with graphql playground
-        contentSecurityPolicy:
-          process.env.NODE_ENV === 'production' ? undefined : false,
-      })
-    );
+    this.server = new ApolloServer({
+      context: ({ req, res }) => ({ req, res }),
+      // @ts-ignore
+      formatResponse,
+      schema,
+    });
 
     const cors = {
       // send relevant cookies
@@ -82,18 +94,6 @@ class App {
     this.server.applyMiddleware({
       app: this.app,
       cors,
-    });
-  }
-
-  private async initializeServer() {
-    // builds the GraphQL schema using the resolver classes.
-    const schema = await createSchema();
-
-    this.server = new ApolloServer({
-      context: ({ req, res }) => ({ req, res }),
-      // @ts-ignore
-      formatResponse,
-      schema,
     });
   }
 
