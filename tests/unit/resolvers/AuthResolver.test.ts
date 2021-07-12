@@ -82,7 +82,7 @@ describe('AuthResolver unit', () => {
     // @ts-ignore
     createToken.mockImplementationOnce(() => fakeToken);
 
-    it('should call userService.getByUsername, bcryptService.validatePassword, res.cookie and redisService.add, jwtService.createTokens, redisService.add', async () => {
+    it('should call userService.getByUsername, bcryptService.validatePassword, res.cookie, redisService.add, jwtService.createTokens ', async () => {
       const logInData = {
         password: 'benbenben',
         username: 'benben',
@@ -96,6 +96,7 @@ describe('AuthResolver unit', () => {
       const mockContext: any = {
         res: {
           cookie: jest.fn(),
+          status: jest.fn(),
         },
       };
       const accessToken = 'accessToken';
@@ -171,7 +172,7 @@ describe('AuthResolver unit', () => {
     // @ts-ignore
     createToken.mockImplementationOnce(() => fakeToken);
 
-    it('should call mailService.sendVerificationEmail, userService.create, jwtService.createTokens, res.cookie and redisService.add', async () => {
+    it('should call mailService.sendVerificationEmail, userService.create, jwtService.createTokens, res.cookie, redisService.add and res.status', async () => {
       const createUserData = {
         email: 'ben@ben.com',
         password: 'benben',
@@ -185,6 +186,7 @@ describe('AuthResolver unit', () => {
       const mockContext: any = {
         res: {
           cookie: jest.fn(),
+          status: jest.fn(),
         },
       };
       const accessToken = 'accessToken';
@@ -247,6 +249,8 @@ describe('AuthResolver unit', () => {
         60 * 60 * 24 * 365, // 1 year
         refreshToken
       );
+
+      expect(mockContext.res.status).toHaveBeenCalledTimes(1);
     });
 
     it('should not call mailService.sendVerificationEmail when omitting email', async () => {
@@ -262,6 +266,7 @@ describe('AuthResolver unit', () => {
       const mockContext: any = {
         res: {
           cookie: jest.fn(),
+          status: jest.fn(),
         },
       };
       const accessToken = 'accessToken';
