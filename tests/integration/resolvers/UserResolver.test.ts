@@ -1,6 +1,5 @@
-import { ApolloServer } from 'apollo-server-express';
-import { createTestClient } from 'apollo-server-testing';
 import dotenv from 'dotenv';
+import request from 'supertest';
 import { Container } from 'typedi';
 import { getRepository } from 'typeorm';
 
@@ -11,17 +10,11 @@ import {
   Profile,
   User,
 } from '../../../src/entities';
-import {
-  createTestConnection,
-  createSchema,
-  formatResponse,
-  TestUtils,
-} from '../../../src/utils';
+import { createTestConnection, TestUtils } from '../../../src/utils';
 
 dotenv.config();
 
 describe('UserResolver integration', () => {
-  let query: any;
   let testUtils: TestUtils;
 
   beforeAll(async () => {
@@ -41,18 +34,6 @@ describe('UserResolver integration', () => {
       getRepository(GeneralPreferences)
     );
     Container.set('profileRepository', getRepository(Profile));
-
-    const schema = await createSchema();
-    const server = new ApolloServer({
-      context: () => ({ res: { cookie: jest.fn() } }),
-      // @ts-ignore
-      formatResponse,
-      schema,
-    });
-
-    const testServer = createTestClient(server);
-
-    query = testServer.query;
   });
 
   beforeEach(async () => {
@@ -64,61 +45,106 @@ describe('UserResolver integration', () => {
   });
 
   describe('Queries', () => {
-    const isUsernameUnique = `
-			query IsUsernameUnique($username: String!) {
-				isUsernameUnique(username: $username)
-			}
-		`;
-
     describe('isUsernameUnique', () => {
-      it('should succeed when it meets the length requirements and isnt in the db', async () => {
-        const expected = { isUsernameUnique: true };
-        const response = await query({
-          query: isUsernameUnique,
-          variables: {
-            username: 'benbenben',
-          },
-        });
+      it('should return true to indicate there is no other user with the username', async () => {
+        const expected = { data: { isUsernameUnique: true } };
+        const response = await request(testUtils.getApp())
+          .post('/graphql')
+          .send({
+            query: `
+							query {
+								isUsernameUnique(username:"ben")
+							}
+						`,
+          })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200);
 
-        expect(response.data).toEqual(expected);
+        expect(response.body).toEqual(expected);
       });
 
-      it('should fail when username less than 3 characters', async () => {
-        const expected = [
-          {
-            field: 'username',
-            constraints: {
-              minLength: 'Username must be between 3 and 20 characters',
-            },
-          },
-        ];
-        const response = await query({
-          query: isUsernameUnique,
-          variables: {
-            username: 'b',
-          },
-        });
+      it('should return false to indicate there is a user with the username', async () => {
+        await testUtils
+          .getConnection()
+          .getRepository(User)
+          .create({
+            username: 'ben',
+            password: 'testinghere',
+          })
+          .save();
 
-        expect(response.errors).toEqual(expected);
+        const expected = { data: { isUsernameUnique: false } };
+        const response = await request(testUtils.getApp())
+          .post('/graphql')
+          .send({
+            query: `
+							query {
+								isUsernameUnique(username:"ben")
+							}
+						`,
+          })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200);
+
+        expect(response.body).toEqual(expected);
       });
 
-      it('should fail when username greater than 20 characters', async () => {
-        const expected = [
-          {
-            field: 'username',
-            constraints: {
-              maxLength: 'Username must be between 3 and 20 characters',
-            },
-          },
-        ];
-        const response = await query({
-          query: isUsernameUnique,
-          variables: {
-            username: 'benjskfajalkjfksajdfjalsfdkjsa',
-          },
+      describe('username', () => {
+        it('should fail when username less than 3 characters', async () => {
+          const expected = {
+            errors: [
+              {
+                field: 'username',
+                constraints: {
+                  minLength: 'Username must be between 3 and 20 characters',
+                },
+              },
+            ],
+          };
+          const response = await request(testUtils.getApp())
+            .post('/graphql')
+            .send({
+              query: `
+							query {
+								isUsernameUnique(username:"be")
+							}
+						`,
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400);
+
+          expect(response.body).toEqual(expected);
         });
 
-        expect(response.errors).toEqual(expected);
+        it('should fail when username greater than 20 characters', async () => {
+          const expected = {
+            errors: [
+              {
+                field: 'username',
+                constraints: {
+                  maxLength: 'Username must be between 3 and 20 characters',
+                },
+              },
+            ],
+          };
+          const response = await request(testUtils.getApp())
+            .post('/graphql')
+            .send({
+              query: `
+							query {
+								isUsernameUnique(username:"thisusernameisover20acharacters")
+							}
+						`,
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400);
+
+          expect(response.body).toEqual(expected);
+        });
       });
     });
   });
