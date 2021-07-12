@@ -1,5 +1,7 @@
 import { Connection } from 'typeorm';
+
 import { Community, User } from '../entities';
+import App from '../App';
 
 type Entities = 'communities' | 'users';
 
@@ -8,12 +10,14 @@ type Entities = 'communities' | 'users';
  */
 class TestUtils {
   private connection: Connection;
+  private app: App;
 
   /**
    * Setup the connection to the db.
    */
   constructor(connection: Connection) {
     this.connection = connection;
+    this.app = new App();
   }
 
   /*
@@ -35,6 +39,14 @@ class TestUtils {
    */
   async closeConnection(): Promise<void> {
     await this.connection.close();
+  }
+
+  /**
+   * Getter method to return the app.
+   */
+
+  getApp() {
+    return this.app.app;
   }
 
   /**
