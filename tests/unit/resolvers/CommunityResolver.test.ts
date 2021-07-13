@@ -63,6 +63,7 @@ describe('CommunityResovler unit', () => {
         },
         res: {
           cookie: jest.fn(),
+          status: jest.fn(),
         },
       };
       const mockCommunity = {

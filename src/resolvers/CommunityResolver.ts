@@ -2,11 +2,14 @@ import { MinLength, MaxLength, Matches } from 'class-validator';
 import { Service } from 'typedi';
 import {
   Arg,
+  Args,
+  ArgsType,
   Ctx,
   Field,
   InputType,
   Mutation,
   ObjectType,
+  Query,
   UseMiddleware,
   Resolver,
 } from 'type-graphql';
@@ -29,8 +32,8 @@ class CreateCommunityInput {
   description: string;
 
   @Field()
-  @MinLength(3, { message: 'Name must be between 3 and 21 characters' })
-  @MaxLength(21, { message: 'Name must be between 3 and 21 characters' })
+  @MinLength(1, { message: 'Name must be between 1 and 21 characters' })
+  @MaxLength(21, { message: 'Name must be between 1 and 21 characters' })
   @IsCommunityNameUnique({ message: 'That community name is already taken' })
   name: string;
 
@@ -38,7 +41,9 @@ class CreateCommunityInput {
   isNsfw: boolean;
 
   @Field()
-  @Matches(/private|protected|public/)
+  @Matches(/private|protected|public/, {
+    message: 'Type must be 1 of 3 values(private, protected, public)',
+  })
   type: string;
 }
 
@@ -49,7 +54,7 @@ class CreateCommunityInput {
 @ObjectType()
 class CreateCommunityErrorConstraints {
   @Field(() => String, { nullable: true })
-  isIn?: string;
+  matches?: string;
 
   @Field(() => String, { nullable: true })
   maxLength?: string;
@@ -83,6 +88,22 @@ class CreateCommunityResponse {
 }
 
 /**
+ * Validates name argument passed in to isUsernameUnique.
+ *
+ * Must be a valid username.
+ * Must be between 3 - 20 characters in length.
+ * Must be unique, there can be no user in the db with that
+ * same email.
+ */
+@ArgsType()
+class NameArg {
+  @Field()
+  @MinLength(3, { message: 'Name must be between 3 and 21 characters' })
+  @MaxLength(21, { message: 'Name must be between 3 and 21 characters' })
+  name: string;
+}
+
+/**
  * This class defines the queries and mutations associated with
  * the community controller.
  */
@@ -111,7 +132,7 @@ class CommunityResolver {
   async createCommunity(
     @Arg('createCommunityData', () => CreateCommunityInput)
     createCommunityData: CreateCommunityInput,
-    @Ctx() { req }: MyContext
+    @Ctx() { req, res }: MyContext
   ): Promise<CreateCommunityResponse> {
     try {
       const { username } = req;
@@ -133,12 +154,35 @@ class CommunityResolver {
         community
       );
 
+      res.status(201);
+
       return { created: true };
     } catch (e) {
       // eslint-disable-next-line
 			console.log('createCommunity mutation error: ', e);
 
+      res.status(500);
+
       return { created: false };
+    }
+  }
+
+  /**
+   * Checks if there is a community with the same name exists in the db.
+   */
+  @Query(() => Boolean)
+  @UseMiddleware(isAuthenticated)
+  async isCommunityNameUnique(@Args() { name }: NameArg): Promise<boolean> {
+    try {
+      const community = await this.communityService.getByName(name);
+      if (community) {
+        return false;
+      }
+      return true;
+    } catch (e) {
+      // eslint-disable-next-line
+			console.log('isCommunityNameUnique error: ', e);
+      return false;
     }
   }
 }

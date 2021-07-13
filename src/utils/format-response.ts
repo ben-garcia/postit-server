@@ -15,7 +15,10 @@ const formatResponse = (response: GraphQLResponse) => {
           });
         }
       );
-    } else if (response.errors[0].message.startsWith('Unauthorized')) {
+    } else if (
+      response.errors[0].message.startsWith('Unauthorized') ||
+      response.errors[0].message.startsWith('Unexpected')
+    ) {
       modifiedResponse.errors.push({ message: 'Unauthorized' });
     } else {
       return response;

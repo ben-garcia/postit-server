@@ -70,7 +70,7 @@
     "start": "nodemon --exec ts-node src/index.ts",
     "start:cy": "CYPRESS_TEST=true nodemon --exec ts-node src/index.ts",
     "lint": "eslint . --ext js,ts --fix",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --detectOpenHandles",
     "test:watch": "jest --watch  --runInBand --detectOpenHandles",
     "test:coverage": "jest --runInBand  --collectCoverage",
     "type-check": "tsc --project tsconfig.json --pretty --noEmit"
