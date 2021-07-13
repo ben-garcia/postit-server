@@ -45,6 +45,13 @@ class CommunityService {
 
     return newCommunity;
   }
+
+  /**
+   * Fetch a community by name
+   */
+  async getByName(name: string): Promise<Community | undefined> {
+    return this.communityRepository.findOne({ where: { name } });
+  }
 }
 
 export default CommunityService;
