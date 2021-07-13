@@ -27,10 +27,13 @@ const isAuthenticated: MiddlewareFn<MyContext> = (
     console.log('jwt.verify error: ', e);
   }
 
-  console.log('refresh: ', decodedSessionRefreshToken);
-
   if (!sessionRefreshToken) {
-    throw new Error('Unauthorized');
+    // set the status to 401 when authentication fails
+    // TODO find a way to get a 401 when formatting the response
+    // as it currently sends a 400 with a formatted response
+    res.status(401);
+    // eslint-disable-next-line prefer-promise-reject-errors
+    return Promise.reject({ error: { message: 'Unauthorized' } });
   }
 
   if (!sessionAccessToken && sessionRefreshToken) {
@@ -76,8 +79,7 @@ const isAuthenticated: MiddlewareFn<MyContext> = (
 
     return next();
   }
-  // TODO add username to req object
-  (req as any).username = decodedSessionRefreshToken.username;
+  req.username = decodedSessionRefreshToken.username;
 
   return next();
 };
