@@ -7,7 +7,7 @@ interface CreateCommunityDTO {
   description: string;
   name: string;
   isNsfw: boolean;
-  type: 'public' | 'protected' | 'private';
+  type: 'public' | 'private' | 'restricted';
 }
 
 /**

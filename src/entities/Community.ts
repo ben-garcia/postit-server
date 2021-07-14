@@ -30,9 +30,9 @@ class Community extends BaseEntity {
   @ManyToOne(() => User, user => user.communities)
   creator: User;
 
-  @Column()
-  @Field(() => String)
-  description: string;
+  @Column({ default: null, nullable: true })
+  @Field(() => String, { nullable: true })
+  description?: string;
 
   @Column({ default: null, nullable: true })
   @Field(() => String, { nullable: true })
@@ -60,7 +60,7 @@ class Community extends BaseEntity {
 
   @Column('varchar', { length: 10 })
   @Field(() => String)
-  type: 'private' | 'protected' | 'public';
+  type: 'private' | 'public' | 'restricted';
 
   @CreateDateColumn()
   @Field(() => String)

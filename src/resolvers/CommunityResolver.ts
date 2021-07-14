@@ -25,13 +25,6 @@ import { MyContext } from '../types';
 @InputType()
 class CreateCommunityInput {
   @Field()
-  @MinLength(1, { message: 'Description must be between 1 and 500 characters' })
-  @MaxLength(500, {
-    message: 'Description must be between 1 and 500 characters',
-  })
-  description: string;
-
-  @Field()
   @MinLength(1, { message: 'Name must be between 1 and 21 characters' })
   @MaxLength(21, { message: 'Name must be between 1 and 21 characters' })
   @IsCommunityNameUnique({ message: 'That community name is already taken' })
@@ -41,10 +34,10 @@ class CreateCommunityInput {
   isNsfw: boolean;
 
   @Field()
-  @Matches(/private|protected|public/, {
-    message: 'Type must be 1 of 3 values(private, protected, public)',
+  @Matches(/private|public|restricted/, {
+    message: 'Type must be 1 of 3 values(private, public, restricted)',
   })
-  type: string;
+  type: 'private' | 'public' | 'restricted';
 }
 
 /**
