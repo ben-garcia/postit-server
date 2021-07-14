@@ -138,7 +138,6 @@ describe('CommunityResolver integration', () => {
           .getConnection()
           .getRepository(Community)
           .create({
-            description: 'testing',
             name: 'test',
             isNsfw: false,
             type: 'public',
@@ -226,7 +225,6 @@ describe('CommunityResolver integration', () => {
   describe('Mutations', () => {
     describe('createCommunity', () => {
       const testCommunity = {
-        description: 'testing',
         name: 'test',
         isNsfw: false,
         type: 'public',
@@ -249,7 +247,6 @@ describe('CommunityResolver integration', () => {
 							mutation {
 								createCommunity(
 									createCommunityData: {
-										description: "${testCommunity.description}"
 										name: "${testCommunity.name}"
 										isNsfw: ${testCommunity.isNsfw}
 										type: "${testCommunity.type}"
@@ -296,7 +293,6 @@ describe('CommunityResolver integration', () => {
 							mutation {
 								createCommunity(
 									createCommunityData: {
-										description: "${testCommunity.description}"
 										name: "${testCommunity.name}"
 										isNsfw: ${testCommunity.isNsfw}
 										type: "${testCommunity.type}"
@@ -319,98 +315,6 @@ describe('CommunityResolver integration', () => {
           .expect(400);
 
         expect(response.body).toEqual(expected);
-      });
-
-      describe('description', () => {
-        it('should fail when field is empty string', async () => {
-          const expected = {
-            errors: [
-              {
-                field: 'description',
-                constraints: {
-                  minLength: 'Description must be between 1 and 500 characters',
-                },
-              },
-            ],
-          };
-          const response = await request(testUtils.getApp())
-            .post('/graphql')
-            .send({
-              query: `
-								mutation {
-									createCommunity(
-										createCommunityData: {
-											description: ""
-											name: "${testCommunity.name}"
-											isNsfw: ${testCommunity.isNsfw}
-											type: "${testCommunity.type}"
-										}
-									) {
-										created
-										errors {
-											constraints {
-												matches
-												maxLength
-												minLength
-											}
-										}
-									}
-								}
-						 `,
-            })
-            .set('Cookie', sessionCookie)
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .expect(400);
-
-          expect(response.body).toEqual(expected);
-        });
-
-        it('should fail when field is greater than 500 characters', async () => {
-          const invalidDescription =
-            'Deleniti vel sapiente ut sunt nulla. Dolor qui neque ea dicta. Dolor omnis aut est cumque. Voluptatum sint asperiores sed omnis. A iusto labore ullam quo non tenetur id. Nobis in consequatur ut consectetur voluptates enim. Magnam et earum rerum velit accusantium voluptatem tempora consequatur. Sunt a rerum ad. Ut hic aut harum. Repellat nam tempore cum neque. Error ea eum odit accusantium quas. Quisquam ut exercitationem eos quis dolorem fugit. Consequatur cupiditate quo alias voluptas qui ullam est.';
-          const expected = {
-            errors: [
-              {
-                field: 'description',
-                constraints: {
-                  maxLength: 'Description must be between 1 and 500 characters',
-                },
-              },
-            ],
-          };
-          const response = await request(testUtils.getApp())
-            .post('/graphql')
-            .send({
-              query: `
-								mutation {
-									createCommunity(
-										createCommunityData: {
-											description: "${invalidDescription}"
-											name: "${testCommunity.name}"
-											isNsfw: ${testCommunity.isNsfw}
-											type: "${testCommunity.type}"
-										}
-									) {
-										created
-										errors {
-											constraints {
-												matches
-												maxLength
-												minLength
-											}
-										}
-									}
-								}		
-							`,
-            })
-            .set('Cookie', sessionCookie)
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .expect(400);
-
-          expect(response.body).toEqual(expected);
-        });
       });
 
       describe('name', () => {
@@ -438,7 +342,6 @@ describe('CommunityResolver integration', () => {
 								mutation {
 									createCommunity(
 										createCommunityData: {
-											description: "${testCommunity.description}"
 											name: "${testCommunity.name}"
 											isNsfw: ${testCommunity.isNsfw}
 											type: "${testCommunity.type}"
@@ -482,7 +385,6 @@ describe('CommunityResolver integration', () => {
 								mutation {
 									createCommunity(
 										createCommunityData: {
-											description: "${testCommunity.description}"
 											name: ""
 											isNsfw: ${testCommunity.isNsfw}
 											type: "${testCommunity.type}"
@@ -526,7 +428,6 @@ describe('CommunityResolver integration', () => {
 								mutation {
 									createCommunity(
 										createCommunityData: {
-											description: "${testCommunity.description}"
 											name: "thisisverylongcommunityname"
 											isNsfw: ${testCommunity.isNsfw}
 											type: "${testCommunity.type}"
@@ -573,7 +474,6 @@ describe('CommunityResolver integration', () => {
 							mutation {
 								createCommunity(
 									createCommunityData: {
-										description: "${testCommunity.description}"
 										name: "${testCommunity.name}"
 										isNsfw: ${testCommunity.isNsfw}
 										type: "invalid"
