@@ -49,14 +49,14 @@ const isAuthenticated: MiddlewareFn<MyContext> = (
       newAccessToken = jwt.sign(
         {
           email: decodedSessionRefreshToken.email,
-          usename: decodedSessionRefreshToken.usename,
+          username: decodedSessionRefreshToken.username,
         },
         jwtSecret
       );
       newRefreshToken = jwt.sign(
         {
           email: decodedSessionRefreshToken.email,
-          usename: decodedSessionRefreshToken.usename,
+          username: decodedSessionRefreshToken.username,
           accessToken: newAccessToken,
           exp: decodedSessionRefreshToken.exp,
         },
@@ -69,16 +69,15 @@ const isAuthenticated: MiddlewareFn<MyContext> = (
 
     res.cookie('session-access-token', newAccessToken, {
       ...cookieOptions,
-      maxAge: 1000 * 60 * 60 * 15, // 15 minutes
+      maxAge: 1000 * 60 * 15, // 15 minutes
     });
 
     res.cookie('session-refresh-token', newRefreshToken, {
       ...cookieOptions,
       maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
     });
-
-    return next();
   }
+
   req.username = decodedSessionRefreshToken.username;
 
   return next();

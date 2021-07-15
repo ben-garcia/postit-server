@@ -20,7 +20,7 @@ class Community extends BaseEntity {
 
   @Column({ default: null, nullable: true })
   @Field(() => String, { nullable: true })
-  bannerUrl?: string;
+  bannerUrl: string;
 
   @Column({ default: 0 })
   @Field(() => Int)
@@ -32,11 +32,11 @@ class Community extends BaseEntity {
 
   @Column({ default: null, nullable: true })
   @Field(() => String, { nullable: true })
-  description?: string;
+  description: string;
 
   @Column({ default: null, nullable: true })
   @Field(() => String, { nullable: true })
-  iconUrl?: string;
+  iconUrl: string;
 
   @Column()
   @Field(() => String)
@@ -44,7 +44,7 @@ class Community extends BaseEntity {
 
   @Column({ default: null, nullable: true })
   @Field(() => String, { nullable: true })
-  location?: string;
+  location: string;
 
   @Column({ length: 21, unique: true })
   @Field(() => String)
@@ -52,11 +52,11 @@ class Community extends BaseEntity {
 
   @Column({ default: null, nullable: true })
   @Field(() => String, { nullable: true })
-  themeColor?: string;
+  themeColor: string;
 
   @Column('text', { default: null, nullable: true })
   @Field(() => String, { nullable: true })
-  topics?: string;
+  topics: string;
 
   @Column('varchar', { length: 10 })
   @Field(() => String)

@@ -132,7 +132,7 @@ class CommunityResolver {
       const user = await this.userService.getByUsername(username);
 
       if (!user) {
-        throw new Error('Unauthorized');
+        return { created: false };
       }
 
       const community = await this.communityService.create(

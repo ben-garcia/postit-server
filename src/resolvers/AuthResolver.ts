@@ -177,7 +177,7 @@ class AuthResolver {
 
       res.cookie('session-access-token', accessToken, {
         ...cookieOptions,
-        maxAge: 1000 * 60 * 60 * 15, // 15 minutes
+        maxAge: 1000 * 60 * 15, // 15 minutes
       });
 
       res.cookie('session-refresh-token', refreshToken, {
@@ -237,7 +237,7 @@ class AuthResolver {
 
       res.cookie('session-access-token', accessToken, {
         ...cookieOptions,
-        maxAge: 1000 * 60 * 60 * 15, // 15 minutes
+        maxAge: 1000 * 60 * 15, // 15 minutes
       });
 
       res.cookie('session-refresh-token', refreshToken, {
