@@ -2,7 +2,7 @@ import { Service } from 'typedi';
 import { Arg, Ctx, Field, InputType, Mutation, Resolver } from 'type-graphql';
 import { getRepository } from 'typeorm';
 
-import { User } from '../entities';
+import { Community, User } from '../entities';
 import {
   JwtService,
   MailService,
@@ -50,6 +50,7 @@ class TestResolver {
   @Mutation(() => Boolean)
   async clearDB(): Promise<Boolean> {
     try {
+      await getRepository(Community).query('DELETE FROM communities');
       await getRepository(User).query('DELETE FROM users');
       return true;
     } catch (e) {
