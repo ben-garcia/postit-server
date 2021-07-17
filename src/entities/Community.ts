@@ -18,9 +18,13 @@ class Community extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: null, nullable: true })
-  @Field(() => String, { nullable: true })
+  @Column({ default: '#33a8ff' })
+  @Field(() => String)
   bannerUrl: string;
+
+  @Column({ default: 'small' })
+  @Field(() => String)
+  bannerHeight: 'small' | 'medium' | 'large';
 
   @Column({ default: 0 })
   @Field(() => Int)
@@ -50,7 +54,7 @@ class Community extends BaseEntity {
   @Field(() => String)
   name: string;
 
-  @Column({ default: null, nullable: true })
+  @Column({ default: '#0079d3', nullable: true })
   @Field(() => String, { nullable: true })
   themeColor: string;
 
