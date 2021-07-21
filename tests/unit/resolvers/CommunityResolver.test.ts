@@ -70,7 +70,7 @@ describe('CommunityResovler unit', () => {
         description: 'testingtesting',
         name: 'testingname',
         isNsfw: false,
-        type: 'public',
+        type: 'public' as 'public',
       };
 
       communityResolver.communityService.create = jest
@@ -99,6 +99,30 @@ describe('CommunityResovler unit', () => {
         `${mockUser.username}:communities`,
         60 * 30, // 1 year
         mockCommunity
+      );
+    });
+  });
+
+  describe('getCommunity query', () => {
+    it('should call communityService.getByName', async () => {
+      const mockCommunity = {
+        description: 'testingtesting',
+        name: 'testingname',
+        isNsfw: false,
+        type: 'public' as 'public',
+      };
+
+      communityResolver.communityService.getByName = jest
+        .fn()
+        .mockReturnValue(mockCommunity);
+
+      await communityResolver.getCommunity(mockCommunity.name);
+
+      expect(
+        communityResolver.communityService.getByName
+      ).toHaveBeenCalledTimes(1);
+      expect(communityResolver.communityService.getByName).toHaveBeenCalledWith(
+        mockCommunity.name
       );
     });
   });
