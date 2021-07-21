@@ -186,7 +186,7 @@ class CommunityResolver {
         return { community };
       }
 
-      return { error: 'There is community with that name' };
+      return { error: 'There is no community with that name' };
     } catch (e) {
       // eslint-disable-next-line
 			console.log('getCommunity query error: ', e);

@@ -64,20 +64,25 @@ describe('CommunityResolver integration', () => {
   let sessionCookie: string;
 
   describe('Queries', () => {
+    const fakeUser = {
+      email: 'test@user.com',
+      username: 'testuser',
+      password: 'password',
+    };
     beforeAll(async () => {
       const response = await request(testUtils.getApp())
         .post('/graphql')
         .send({
           query: `
-					mutation {
-						signUp(
-							createUserData: {
-								email: "test@user.com"
-								username: "testuser"
-								password: "password"
-							}
-						) {
-							created
+						mutation {
+							signUp(
+								createUserData: {
+									email: "${fakeUser.email}"
+									username: "${fakeUser.username}"
+									password: "${fakeUser.password}"
+								}
+							) {
+								created
 						}
 					}
 				`,
@@ -86,6 +91,80 @@ describe('CommunityResolver integration', () => {
 
       // eslint-disable-next-line prefer-destructuring
       sessionCookie = response.header['set-cookie'];
+    });
+
+    describe('getCommunity', () => {
+      const fakeCommunity = {
+        name: 'test',
+        isNsfw: false,
+        type: 'public',
+      };
+      beforeEach(async () => {
+        await testUtils
+          .getConnection()
+          .getRepository(Community)
+          .create(fakeCommunity as Partial<Community>)
+          .save();
+      });
+
+      it('should succesfully return the community', async () => {
+        const expected = {
+          data: {
+            getCommunity: {
+              community: {
+                ...fakeCommunity,
+                isNsfw: `${fakeCommunity.isNsfw}`,
+              },
+            },
+          },
+        };
+
+        const response = await request(testUtils.getApp())
+          .post('/graphql')
+          .send({
+            query: `
+							query {
+								getCommunity(name: "test") {
+									community {
+										name,
+										isNsfw,
+										type
+									}
+								}
+							}
+						`,
+          })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200);
+
+        expect(response.body).toEqual(expected);
+      });
+
+      it('should return error with message indicate there is no community with that name', async () => {
+        const expected = {
+          data: {
+            getCommunity: { error: 'There is no community with that name' },
+          },
+        };
+        const response = await request(testUtils.getApp())
+          .post('/graphql')
+          .send({
+            query: `
+							query {
+								getCommunity(name: "test2") {
+									error
+								}
+							}
+						`,
+          })
+          .set('Cookie', sessionCookie)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200);
+
+        expect(response.body).toEqual(expected);
+      });
     });
 
     describe('isUsernameUnique', () => {
@@ -462,7 +541,7 @@ describe('CommunityResolver integration', () => {
                 field: 'type',
                 constraints: {
                   matches:
-                    'Type must be 1 of 3 values(private, protected, public)',
+                    'Type must be 1 of 3 values(private, public, restricted)',
                 },
               },
             ],
