@@ -15,6 +15,7 @@ import {
 } from 'type-graphql';
 
 import { IsCommunityNameUnique } from '../decorators';
+import { Community } from '../entities';
 import { CommunityService, RedisService, UserService } from '../services';
 import { isAuthenticated } from '../middleware';
 import { MyContext } from '../types';
@@ -78,6 +79,15 @@ class CreateCommunityResponse {
 
   @Field(() => Boolean, { nullable: true })
   created?: boolean;
+}
+
+@ObjectType()
+class GetCommunityResponse {
+  @Field(() => String, { nullable: true })
+  error?: string;
+
+  @Field(() => Community, { nullable: true })
+  community?: Community;
 }
 
 /**
@@ -157,6 +167,31 @@ class CommunityResolver {
       res.status(500);
 
       return { created: false };
+    }
+  }
+
+  /**
+   * Returns a community
+   *
+   * @param name the community name
+   */
+  @Query(() => GetCommunityResponse)
+  async getCommunity(
+    @Arg('name', () => String) name: string
+  ): Promise<GetCommunityResponse> {
+    try {
+      const community = await this.communityService.getByName(name);
+
+      if (community) {
+        return { community };
+      }
+
+      return { error: 'There is community with that name' };
+    } catch (e) {
+      // eslint-disable-next-line
+			console.log('getCommunity query error: ', e);
+
+      return { error: e.message };
     }
   }
 

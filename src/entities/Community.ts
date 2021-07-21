@@ -31,7 +31,7 @@ class Community extends BaseEntity {
   coinCount: number;
 
   @Field(() => User)
-  @ManyToOne(() => User, user => user.communities)
+  @ManyToOne(() => User, user => user.communities, { eager: true })
   creator: User;
 
   @Column({ default: null, nullable: true })
