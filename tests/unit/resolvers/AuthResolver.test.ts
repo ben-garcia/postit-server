@@ -144,7 +144,7 @@ describe('AuthResolver unit', () => {
         accessToken,
         {
           ...expectedCookieOptions,
-          maxAge: 1000 * 60 * 60 * 15,
+          maxAge: 1000 * 60 * 15,
         }
       );
       expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
@@ -230,7 +230,7 @@ describe('AuthResolver unit', () => {
         accessToken,
         {
           ...expectedCookieOptions,
-          maxAge: 1000 * 60 * 60 * 15,
+          maxAge: 1000 * 60 * 15,
         }
       );
       expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
@@ -302,7 +302,7 @@ describe('AuthResolver unit', () => {
         accessToken,
         {
           ...expectedCookieOptions,
-          maxAge: 1000 * 60 * 60 * 15,
+          maxAge: 1000 * 60 * 15,
         }
       );
       expect(mockContext.res.cookie).toHaveBeenNthCalledWith(
