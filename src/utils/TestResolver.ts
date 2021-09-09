@@ -114,7 +114,7 @@ class TestResolver {
       return true;
     } catch (e) {
       // eslint-disable-next-line
-			console.log('testSignUp mutation error: ', e);
+      console.log('testSignUp mutation error: ', e);
 
       return false;
     }

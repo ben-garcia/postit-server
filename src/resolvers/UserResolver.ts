@@ -42,7 +42,7 @@ class UserResolver {
       return users;
     } catch (e) {
       // eslint-disable-next-line
-			console.log('UserResolver.getAllUsers error: ', e);
+      console.log('UserResolver.getAllUsers error: ', e);
 
       return undefined;
     }
@@ -61,7 +61,7 @@ class UserResolver {
       return true;
     } catch (e) {
       // eslint-disable-next-line
-			console.log('isUsernameUnique error: ', e);
+      console.log('isUsernameUnique error: ', e);
       return false;
     }
   }

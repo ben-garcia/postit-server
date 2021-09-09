@@ -68,7 +68,7 @@ class MailService {
       );
 
       // eslint-disable-next-line
-			console.log(`https://ethereal.email/message/${previewUrl}`);
+      console.log(`https://ethereal.email/message/${previewUrl}`);
     }
   }
 }

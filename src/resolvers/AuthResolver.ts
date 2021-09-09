@@ -195,7 +195,7 @@ class AuthResolver {
       return { success: true };
     } catch (e) {
       // eslint-disable-next-line
-			console.log('logIn mutation error: ', e);
+      console.log('logIn mutation error: ', e);
 
       return { success: false };
     }
@@ -257,7 +257,7 @@ class AuthResolver {
       return { created: true };
     } catch (e) {
       // eslint-disable-next-line
-			console.log('signUp mutation error: ', e);
+      console.log('signUp mutation error: ', e);
 
       res.status(500);
 

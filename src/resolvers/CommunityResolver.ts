@@ -162,7 +162,7 @@ class CommunityResolver {
       return { created: true };
     } catch (e) {
       // eslint-disable-next-line
-			console.log('createCommunity mutation error: ', e);
+      console.log('createCommunity mutation error: ', e);
 
       res.status(500);
 
@@ -189,7 +189,7 @@ class CommunityResolver {
       return { error: 'There is no community with that name' };
     } catch (e) {
       // eslint-disable-next-line
-			console.log('getCommunity query error: ', e);
+      console.log('getCommunity query error: ', e);
 
       return { error: e.message };
     }
@@ -209,7 +209,7 @@ class CommunityResolver {
       return true;
     } catch (e) {
       // eslint-disable-next-line
-			console.log('isCommunityNameUnique error: ', e);
+      console.log('isCommunityNameUnique error: ', e);
       return false;
     }
   }
