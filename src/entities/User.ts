@@ -19,6 +19,7 @@ import {
   GeneralPreferences,
   NotificationPreferences,
   EmailNotificationPreferences,
+  Post,
   Profile,
 } from '.';
 
@@ -59,6 +60,10 @@ class User extends BaseEntity {
 
   @Column()
   password: string;
+
+  @Field(() => [Post])
+  @OneToMany(() => Post, post => post.creator, { eager: true })
+  posts: Post[];
 
   @Field(() => Profile, { nullable: true })
   @OneToOne(() => Profile)

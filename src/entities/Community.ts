@@ -4,12 +4,13 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Field, ObjectType, ID, Int } from 'type-graphql';
 
-import { User } from '.';
+import { Post, User } from '.';
 
 @ObjectType()
 @Entity('communities')
@@ -53,6 +54,10 @@ class Community extends BaseEntity {
   @Column({ length: 21, unique: true })
   @Field(() => String)
   name: string;
+
+  @Field(() => [Post])
+  @OneToMany(() => Post, post => post.community, { eager: true })
+  posts: Post[];
 
   @Column({ default: '#0079d3', nullable: true })
   @Field(() => String, { nullable: true })
