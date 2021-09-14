@@ -22,9 +22,6 @@ class Post extends BaseEntity {
   @ManyToOne(() => Community, community => community.posts)
   community: Community;
 
-  @Field(() => String)
-  contentType: 'community' | 'profile';
-
   @Column()
   @Field(() => String)
   contentKind: 'link' | 'self' | 'video' | 'videogif';
@@ -45,25 +42,25 @@ class Post extends BaseEntity {
   @Field(() => Boolean)
   isSpoiler: boolean;
 
-  @Column('varchar')
-  @Field(() => String)
-  name: string;
+  @Column('varchar', { nullable: true })
+  @Field(() => String, { nullable: true })
+  linkUrl: String | null;
 
   @Column()
   @Field(() => Boolean)
   sendReplies: boolean;
 
-  @Column('text')
+  @Column('varchar', { length: 9 })
   @Field(() => String)
-  richTextJson: String;
+  submitType: 'community' | 'profile';
+
+  @Column('text', { nullable: true })
+  @Field(() => String)
+  richTextJson: String | null;
 
   @Column('varchar', { length: 300 })
   @Field(() => String)
   title: string;
-
-  @Column()
-  @Field(() => String)
-  url: String;
 
   @CreateDateColumn()
   @Field(() => String)

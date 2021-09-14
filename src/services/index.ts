@@ -5,6 +5,7 @@ export { default as NotificationPreferencesService } from './NotificationPrefere
 export { default as EmailNotificationPreferencesService } from './EmailNotificationPreferencesService';
 export { default as JwtService } from './JwtService';
 export { default as MailService } from './MailService';
+export { default as PostService } from './PostService';
 export { default as ProfileService } from './ProfileService';
 export { default as RedisService } from './RedisService';
 export { default as UserService } from './UserService';

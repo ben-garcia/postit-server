@@ -13,6 +13,7 @@ import {
   GeneralPreferences,
   NotificationPreferences,
   EmailNotificationPreferences,
+  Post,
   Profile,
   User,
 } from './entities';
@@ -50,7 +51,7 @@ class App {
     );
 
     // Set values on the injected properties.
-    Container.set('userRepository', getRepository(User));
+    Container.set('communityRepository', getRepository(Community));
     Container.set('profileRepository', getRepository(Profile));
     Container.set(
       'generalPreferencesRepository',
@@ -64,7 +65,8 @@ class App {
       'emailNotificationPreferencesRepository',
       getRepository(EmailNotificationPreferences)
     );
-    Container.set('communityRepository', getRepository(Community));
+    Container.set('postRepository', getRepository(Post));
+    Container.set('userRepository', getRepository(User));
     Container.set('transporter', await createTransporter());
     Container.set('bcrypt', bcrypt);
     Container.set('jwt', jwt);
