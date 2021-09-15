@@ -1,9 +1,9 @@
 import { Connection } from 'typeorm';
 
-import { Community, User } from '../entities';
+import { Community, Post, User } from '../entities';
 import App from '../App';
 
-type Entities = 'communities' | 'users';
+type Entities = 'communities' | 'posts' | 'users';
 
 /**
  * Provides helper methods for testing.
@@ -24,6 +24,10 @@ class TestUtils {
    * Clear the tables.
    */
   async clearTables(...tables: Entities[]): Promise<void> {
+    if (tables.includes('posts')) {
+      await this.getConnection().getRepository(Post).query('DELETE FROM posts');
+    }
+
     if (tables.includes('communities')) {
       await this.getConnection()
         .getRepository(Community)

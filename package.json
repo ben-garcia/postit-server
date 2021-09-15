@@ -72,8 +72,8 @@
     "lint": "eslint . --ext js,ts --fix",
 		"postinstall": "husky install",
     "test": "jest --runInBand --detectOpenHandles",
-    "test:watch": "jest --watch  --runInBand --detectOpenHandles",
-    "test:coverage": "jest --runInBand  --collectCoverage",
+    "test:watch": "jest --watch --runInBand --detectOpenHandles",
+    "test:coverage": "jest --runInBand --collectCoverage",
     "type-check": "tsc --project tsconfig.json --pretty --noEmit"
   },
   "keywords": [
